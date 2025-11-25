@@ -52,43 +52,81 @@ export function LeafletMap({
     }
 
     // Dynamically import Leaflet to avoid SSR issues
-    import('leaflet').then((L) => {
-      if (!containerRef.current || mapRef.current) {
-        return;
-      }
+    import('leaflet')
+      .then((L) => {
+        if (!containerRef.current || mapRef.current) {
+          return;
+        }
 
-      // Initialize Leaflet map
-      const map = L.map(containerRef.current, {
-        center,
-        zoom,
-        minZoom,
-        maxZoom,
-        zoomControl: DEFAULT_MAP_CONFIG.zoomControl,
-        attributionControl: DEFAULT_MAP_CONFIG.attributionControl,
+        try {
+          // Ensure container has height before initializing
+          const containerHeight = containerRef.current.offsetHeight;
+          if (containerHeight === 0) {
+            // Container not ready yet, retry after next render
+            requestAnimationFrame(() => {
+              if (containerRef.current && !mapRef.current) {
+                // Will be caught on next dynamic import attempt
+              }
+            });
+            return;
+          }
+
+          // Initialize Leaflet map
+          const map = L.map(containerRef.current, {
+            center,
+            zoom,
+            minZoom,
+            maxZoom,
+            zoomControl: DEFAULT_MAP_CONFIG.zoomControl,
+            attributionControl: DEFAULT_MAP_CONFIG.attributionControl,
+          });
+
+          // Store map reference
+          mapRef.current = map;
+
+          // Register map with context  
+          setMap(map);
+
+          // Invalidate size to ensure proper tile rendering
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              if (mapRef.current) {
+                mapRef.current.invalidateSize();
+              }
+            }, 200);
+          });
+        } catch (error) {
+          console.error('Failed to initialize Leaflet map:', error);
+          throw new Error(`Map initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to load Leaflet library:', error);
+        throw new Error('Failed to load map library. Please check your internet connection and try again.');
       });
-
-      // Store map reference
-      mapRef.current = map;
-
-      // Register map with context
-      setMap(map);
-    });
 
     // Cleanup function
     return () => {
       if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-        setMap(null);
+        try {
+          mapRef.current.remove();
+          mapRef.current = null;
+          setMap(null);
+        } catch (error) {
+          console.error('Error during map cleanup:', error);
+        }
       }
     };
   }, []); // Empty dependency array - only initialize once
 
   return (
-    <div
-      ref={containerRef}
-      className={`w-full h-full ${className}`}
-      data-testid="leaflet-map-container"
-    />
+    <>
+      <div
+        ref={containerRef}
+        className={`w-full h-full ${className}`}
+        data-testid="leaflet-map-container"
+      />
+      {children}
+    </>
   );
 }

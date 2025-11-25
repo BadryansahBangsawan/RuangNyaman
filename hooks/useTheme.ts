@@ -24,21 +24,20 @@ import { useEffect, useState } from 'react';
 export function useTheme() {
   const { theme, setTheme, systemTheme, resolvedTheme } = useNextTheme();
   const [mounted, setMounted] = useState(false);
-  
+
   // Wait for component to mount to avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
-  
+
   // Get the actual theme (resolve 'system' to actual theme)
   const currentTheme = resolvedTheme || (theme === 'system' ? systemTheme : theme);
-  
+
   const toggleTheme = () => {
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    console.log('Toggling theme from', currentTheme, 'to', newTheme);
+    const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
   };
-  
+
   return {
     theme: (mounted ? currentTheme : 'light') as 'light' | 'dark',
     setTheme,

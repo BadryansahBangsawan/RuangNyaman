@@ -4,14 +4,6 @@ import { useTheme } from '@/hooks/useTheme';
 
 /**
  * ThemeToggle component for landing page
- * 
- * Features:
- * - Theme toggle button UI
- * - Connected to useTheme hook
- * - Sun/moon icons
- * - Smooth transitions
- * 
- * Requirements: 3.6
  */
 export function ThemeToggle() {
   const { theme, toggleTheme, mounted } = useTheme();

@@ -42,33 +42,56 @@ export function LeafletTileLayer({
       return;
     }
 
+    // Validate tile URL
+    if (!url || typeof url !== 'string') {
+      console.error('Invalid tile layer URL:', url);
+      return;
+    }
+
     // Dynamically import Leaflet
-    import('leaflet').then((L) => {
-      if (!map) {
-        return;
-      }
+    import('leaflet')
+      .then((L) => {
+        if (!map) {
+          return;
+        }
 
-      // Remove existing tile layer if it exists
-      if (tileLayerRef.current) {
-        tileLayerRef.current.remove();
-      }
+        try {
+          // Remove existing tile layer if it exists
+          if (tileLayerRef.current) {
+            tileLayerRef.current.remove();
+          }
 
-      // Create and add new tile layer
-      const tileLayer = L.tileLayer(url, {
-        attribution,
-        maxZoom,
-        subdomains,
+          // Create and add new tile layer
+          const tileLayer = L.tileLayer(url, {
+            attribution,
+            maxZoom,
+            subdomains,
+          });
+
+          // Add error handling for tile loading
+          tileLayer.on('tileerror', (error) => {
+            console.error('Tile loading error:', error);
+          });
+
+          tileLayer.addTo(map);
+          tileLayerRef.current = tileLayer;
+        } catch (error) {
+          console.error('Failed to add tile layer:', error);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to load Leaflet library:', error);
       });
-
-      tileLayer.addTo(map);
-      tileLayerRef.current = tileLayer;
-    });
 
     // Cleanup function
     return () => {
       if (tileLayerRef.current) {
-        tileLayerRef.current.remove();
-        tileLayerRef.current = null;
+        try {
+          tileLayerRef.current.remove();
+          tileLayerRef.current = null;
+        } catch (error) {
+          console.error('Error removing tile layer:', error);
+        }
       }
     };
   }, [map, url, attribution, maxZoom, subdomains]);

@@ -45,58 +45,82 @@ export function LeafletMarker({
       return;
     }
 
+    // Validate coordinates
+    if (!position || !Array.isArray(position) || position.length !== 2) {
+      console.error('Invalid marker position:', position);
+      return;
+    }
+
+    const [lat, lng] = position;
+    if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) {
+      console.error('Invalid marker coordinates:', { lat, lng });
+      return;
+    }
+
     // Dynamically import Leaflet
-    import('leaflet').then((L) => {
-      if (!map) {
-        return;
-      }
-
-      // Remove existing marker if it exists
-      if (markerRef.current) {
-        markerRef.current.remove();
-      }
-
-      // Create marker options
-      const markerOptions: L.MarkerOptions = {
-        draggable,
-      };
-
-      // Add custom icon if provided
-      if (icon) {
-        markerOptions.icon = icon;
-      }
-
-      // Create and add marker
-      const marker = L.marker(position, markerOptions);
-      marker.addTo(map);
-
-      // Add popup if provided
-      if (popup) {
-        if (typeof popup === 'string') {
-          marker.bindPopup(popup);
-        } else {
-          // For React nodes, we'd need to render to a DOM element
-          // For now, convert to string representation
-          marker.bindPopup(String(popup));
+    import('leaflet')
+      .then((L) => {
+        if (!map) {
+          return;
         }
-      }
 
-      // Handle drag end event
-      if (draggable && onDragEnd) {
-        marker.on('dragend', (event: DragEndEvent) => {
-          const newPosition = event.target.getLatLng();
-          onDragEnd([newPosition.lat, newPosition.lng]);
-        });
-      }
+        try {
+          // Remove existing marker if it exists
+          if (markerRef.current) {
+            markerRef.current.remove();
+          }
 
-      markerRef.current = marker;
-    });
+          // Create marker options
+          const markerOptions: L.MarkerOptions = {
+            draggable,
+          };
+
+          // Add custom icon if provided
+          if (icon) {
+            markerOptions.icon = icon;
+          }
+
+          // Create and add marker
+          const marker = L.marker(position, markerOptions);
+          marker.addTo(map);
+
+          // Add popup if provided
+          if (popup) {
+            if (typeof popup === 'string') {
+              marker.bindPopup(popup);
+            } else {
+              // For React nodes, we'd need to render to a DOM element
+              // For now, convert to string representation
+              marker.bindPopup(String(popup));
+            }
+          }
+
+          // Handle drag end event
+          if (draggable && onDragEnd) {
+            marker.on('dragend', (event: DragEndEvent) => {
+              const newPosition = event.target.getLatLng();
+              onDragEnd([newPosition.lat, newPosition.lng]);
+            });
+          }
+
+          markerRef.current = marker;
+        } catch (error) {
+          console.error('Failed to create marker:', error);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to load Leaflet library:', error);
+      });
 
     // Cleanup function
     return () => {
       if (markerRef.current) {
-        markerRef.current.remove();
-        markerRef.current = null;
+        try {
+          markerRef.current.remove();
+          markerRef.current = null;
+        } catch (error) {
+          console.error('Error removing marker:', error);
+        }
       }
     };
   }, [map, position, icon, popup, draggable, onDragEnd]);

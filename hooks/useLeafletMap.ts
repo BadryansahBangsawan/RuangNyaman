@@ -31,10 +31,10 @@ import type { Map as LeafletMap } from 'leaflet';
  */
 export function useLeafletMap(): LeafletMap | null {
   const context = useContext(MapContext);
-  
+
   if (context === undefined) {
     throw new Error('useLeafletMap must be used within a MapProvider');
   }
-  
+
   return context.map;
 }
