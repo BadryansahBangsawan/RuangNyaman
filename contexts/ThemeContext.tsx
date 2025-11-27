@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
-import { ReactNode } from 'react';
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { ReactNode } from "react";
 
 interface ThemeProviderProps {
   children: ReactNode;
@@ -9,7 +9,7 @@ interface ThemeProviderProps {
 
 /**
  * ThemeProvider component using next-themes
- * 
+ *
  * Features:
  * - Manages light/dark theme state
  * - Persists theme preference to localStorage

@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useContext } from 'react';
-import type { Map as LeafletMapInstance } from 'leaflet';
-import { MapContext } from '@/contexts/MapContext';
-import { DEFAULT_MAP_CONFIG } from '@/constants/map-config';
-import type { LeafletMapProps } from '@/types/components';
+import { useEffect, useRef, useContext } from "react";
+import type { Map as LeafletMapInstance } from "leaflet";
+import { MapContext } from "@/contexts/MapContext";
+import { DEFAULT_MAP_CONFIG } from "@/constants/map-config";
+import type { LeafletMapProps } from "@/types/components";
 
 /**
  * LeafletMap component - Core map wrapper that initializes Leaflet
- * 
+ *
  * This component creates a map container and initializes a Leaflet map instance.
  * It registers the map with MapContext so other components can access it.
- * 
+ *
  * Features:
  * - Initializes Leaflet map with configurable options
  * - Registers map instance with MapContext
  * - Handles cleanup on unmount to prevent memory leaks
  * - Supports custom center, zoom, and zoom bounds
- * 
+ *
  * @example
  * ```tsx
  * <MapProvider>
@@ -32,7 +32,7 @@ export function LeafletMap({
   zoom = DEFAULT_MAP_CONFIG.defaultZoom,
   minZoom = DEFAULT_MAP_CONFIG.minZoom,
   maxZoom = DEFAULT_MAP_CONFIG.maxZoom,
-  className = '',
+  className = "",
   children,
 }: LeafletMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -40,7 +40,7 @@ export function LeafletMap({
   const context = useContext(MapContext);
 
   if (context === undefined) {
-    throw new Error('LeafletMap must be used within a MapProvider');
+    throw new Error("LeafletMap must be used within a MapProvider");
   }
 
   const { setMap } = context;
@@ -52,7 +52,7 @@ export function LeafletMap({
     }
 
     // Dynamically import Leaflet to avoid SSR issues
-    import('leaflet')
+    import("leaflet")
       .then((L) => {
         if (!containerRef.current || mapRef.current) {
           return;
@@ -84,7 +84,7 @@ export function LeafletMap({
           // Store map reference
           mapRef.current = map;
 
-          // Register map with context  
+          // Register map with context
           setMap(map);
 
           // Invalidate size to ensure proper tile rendering
@@ -96,13 +96,19 @@ export function LeafletMap({
             }, 200);
           });
         } catch (error) {
-          console.error('Failed to initialize Leaflet map:', error);
-          throw new Error(`Map initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          console.error("Failed to initialize Leaflet map:", error);
+          throw new Error(
+            `Map initialization failed: ${
+              error instanceof Error ? error.message : "Unknown error"
+            }`
+          );
         }
       })
       .catch((error) => {
-        console.error('Failed to load Leaflet library:', error);
-        throw new Error('Failed to load map library. Please check your internet connection and try again.');
+        console.error("Failed to load Leaflet library:", error);
+        throw new Error(
+          "Failed to load map library. Please check your internet connection and try again."
+        );
       });
 
     // Cleanup function
@@ -113,7 +119,7 @@ export function LeafletMap({
           mapRef.current = null;
           setMap(null);
         } catch (error) {
-          console.error('Error during map cleanup:', error);
+          console.error("Error during map cleanup:", error);
         }
       }
     };

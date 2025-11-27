@@ -14,3 +14,4 @@ export { MapSearchBar } from './MapSearchBar';
 export { MapTopBar } from './MapTopBar';
 export { MapLayersPanel } from './MapLayersPanel';
 export { MapControls } from './MapControls';
+export { MapThemeSwitcher } from './MapThemeSwitcher';

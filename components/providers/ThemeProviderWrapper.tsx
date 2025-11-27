@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { ReactNode } from 'react';
-import { ThemeProvider } from '@/contexts/ThemeContext';
+import { ReactNode } from "react";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 /**
  * Client component wrapper for ThemeProvider

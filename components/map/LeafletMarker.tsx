@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import type { Marker, DragEndEvent } from 'leaflet';
-import { useLeafletMap } from '@/hooks/useLeafletMap';
-import type { LeafletMarkerProps } from '@/types/components';
+import { useEffect, useRef } from "react";
+import type { Marker, DragEndEvent } from "leaflet";
+import { useLeafletMap } from "@/hooks/useLeafletMap";
+import type { LeafletMarkerProps } from "@/types/components";
 
 /**
  * LeafletMarker component - Manages marker rendering on the map
- * 
+ *
  * This component creates and manages a Leaflet marker at a specified position.
  * It supports optional popups, custom icons, and draggable markers with events.
- * 
+ *
  * Features:
  * - Creates marker at specified position
  * - Supports optional popup content (string or React node)
@@ -18,7 +18,7 @@ import type { LeafletMarkerProps } from '@/types/components';
  * - Supports draggable markers with drag end events
  * - Removes marker on unmount
  * - Updates marker position when props change
- * 
+ *
  * @example
  * ```tsx
  * <LeafletMarker
@@ -47,18 +47,23 @@ export function LeafletMarker({
 
     // Validate coordinates
     if (!position || !Array.isArray(position) || position.length !== 2) {
-      console.error('Invalid marker position:', position);
+      console.error("Invalid marker position:", position);
       return;
     }
 
     const [lat, lng] = position;
-    if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) {
-      console.error('Invalid marker coordinates:', { lat, lng });
+    if (
+      typeof lat !== "number" ||
+      typeof lng !== "number" ||
+      isNaN(lat) ||
+      isNaN(lng)
+    ) {
+      console.error("Invalid marker coordinates:", { lat, lng });
       return;
     }
 
     // Dynamically import Leaflet
-    import('leaflet')
+    import("leaflet")
       .then((L) => {
         if (!map) {
           return;
@@ -86,7 +91,7 @@ export function LeafletMarker({
 
           // Add popup if provided
           if (popup) {
-            if (typeof popup === 'string') {
+            if (typeof popup === "string") {
               marker.bindPopup(popup);
             } else {
               // For React nodes, we'd need to render to a DOM element
@@ -97,7 +102,7 @@ export function LeafletMarker({
 
           // Handle drag end event
           if (draggable && onDragEnd) {
-            marker.on('dragend', (event: DragEndEvent) => {
+            marker.on("dragend", (event: DragEndEvent) => {
               const newPosition = event.target.getLatLng();
               onDragEnd([newPosition.lat, newPosition.lng]);
             });
@@ -105,11 +110,11 @@ export function LeafletMarker({
 
           markerRef.current = marker;
         } catch (error) {
-          console.error('Failed to create marker:', error);
+          console.error("Failed to create marker:", error);
         }
       })
       .catch((error) => {
-        console.error('Failed to load Leaflet library:', error);
+        console.error("Failed to load Leaflet library:", error);
       });
 
     // Cleanup function
@@ -119,7 +124,7 @@ export function LeafletMarker({
           markerRef.current.remove();
           markerRef.current = null;
         } catch (error) {
-          console.error('Error removing marker:', error);
+          console.error("Error removing marker:", error);
         }
       }
     };

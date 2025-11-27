@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import Image from "next/image";
 
 /**
  * TechStack component for landing page (Server Component)
@@ -6,29 +6,29 @@ import Image from 'next/image';
 export function TechStack() {
   const technologies = [
     {
-      name: 'Next.js 16',
-      logo: '/logos/nextjs.svg',
-      alt: 'Next.js logo',
+      name: "Next.js 16",
+      logo: "/logos/nextjs.svg",
+      alt: "Next.js logo",
     },
     {
-      name: 'Leaflet',
-      logo: '/logos/leaflet.svg',
-      alt: 'Leaflet logo',
+      name: "Leaflet",
+      logo: "/logos/leaflet.svg",
+      alt: "Leaflet logo",
     },
     {
-      name: 'Tailwind CSS',
-      logo: '/logos/tailwind.svg',
-      alt: 'Tailwind CSS logo',
+      name: "Tailwind CSS",
+      logo: "/logos/tailwind.svg",
+      alt: "Tailwind CSS logo",
     },
     {
-      name: 'shadcn/ui',
-      logo: '/logos/shadcn.svg',
-      alt: 'shadcn/ui logo',
+      name: "shadcn/ui",
+      logo: "/logos/shadcn.svg",
+      alt: "shadcn/ui logo",
     },
     {
-      name: 'Lucide Icons',
-      logo: '/logos/lucide.svg',
-      alt: 'Lucide icons logo',
+      name: "Lucide Icons",
+      logo: "/logos/lucide.svg",
+      alt: "Lucide icons logo",
     },
   ];
 

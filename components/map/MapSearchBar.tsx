@@ -155,7 +155,7 @@ export function MapSearchBar({ onCountrySelect }: MapSearchBarProps) {
     <div className="search-container absolute left-0 right-0 sm:left-4 sm:right-auto top-3 z-[1001] px-4 sm:px-0">
       {/* Search Box - always visible */}
       <div
-        className={`flex items-center gap-2 bg-white px-4 py-3.5 shadow-lg transition-all duration-50 ${
+        className={`flex items-center gap-2 bg-white dark:bg-gray-700/80 backdrop-blur px-4 py-5 sm:py-3.5 shadow-lg transition-all duration-50 ${
           isExpanded ? "rounded-t-lg" : "rounded-full"
         } w-full sm:w-[360px]`}
       >
@@ -167,7 +167,7 @@ export function MapSearchBar({ onCountrySelect }: MapSearchBarProps) {
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => setIsExpanded(true)}
           onKeyDown={handleKeyDown}
-          className="border-none bg-transparent text-sm text-gray-800 font-semibold outline-none placeholder:text-gray-500 transition-all duration-300 w-full"
+          className="border-none bg-transparent text-sm text-gray-800 dark:text-gray-200 font-semibold outline-none placeholder:text-gray-500 dark:placeholder:text-gray-200 transition-all duration-300 w-full"
           aria-label="Search countries"
           aria-expanded={isExpanded}
           aria-controls="search-results"
@@ -177,12 +177,12 @@ export function MapSearchBar({ onCountrySelect }: MapSearchBarProps) {
           autoComplete="off"
         />
         <Search
-          className="h-5 w-5 flex-shrink-0 text-gray-400"
+          className="h-5 w-5 flex-shrink-0 text-gray-400 dark:text-gray-500"
           aria-hidden="true"
         />
-        <div className="ml-2 flex items-center gap-2 border-l border-gray-200 pl-3">
+        <div className="ml-2 flex items-center gap-2 border-l border-gray-200 dark:border-gray-700 pl-3">
           <button
-            className="text-blue-500 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded transition-all"
+            className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded transition-all"
             aria-label="Show current location"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -197,7 +197,7 @@ export function MapSearchBar({ onCountrySelect }: MapSearchBarProps) {
         ref={resultsRef}
         id="search-results"
         role="listbox"
-        className={`overflow-hidden bg-white shadow-lg transition-all duration-300 ease-out ${
+        className={`overflow-hidden bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 ease-out ${
           isExpanded
             ? "max-h-[500px] opacity-100 rounded-b-lg"
             : "max-h-0 opacity-0"
@@ -207,7 +207,7 @@ export function MapSearchBar({ onCountrySelect }: MapSearchBarProps) {
         <div className="overflow-y-auto max-h-[450px]">
           {loading && (
             <div
-              className="px-4 py-8 text-center text-sm text-gray-500"
+              className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
               role="status"
               aria-live="polite"
             >
@@ -217,7 +217,7 @@ export function MapSearchBar({ onCountrySelect }: MapSearchBarProps) {
 
           {!loading && countries.length === 0 && searchQuery && (
             <div
-              className="px-4 py-8 text-center text-sm text-gray-500"
+              className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
               role="status"
               aria-live="polite"
             >
@@ -241,27 +241,27 @@ export function MapSearchBar({ onCountrySelect }: MapSearchBarProps) {
                   onMouseEnter={() => setSelectedIndex(index)}
                   className={`flex w-full items-start gap-4 px-4 py-3 text-left transition-colors ${
                     selectedIndex === index
-                      ? "bg-blue-50 border-l-2 border-blue-500"
-                      : "hover:bg-gray-50 border-l-2 border-transparent"
+                      ? "bg-blue-50 dark:bg-blue-900/30 border-l-2 border-blue-500 dark:border-blue-400"
+                      : "hover:bg-gray-50 dark:hover:bg-gray-700 border-l-2 border-transparent"
                   }`}
                 >
                   <MapPin
-                    className="mt-0.5 h-5 w-5 flex-shrink-0 text-gray-400"
+                    className="mt-0.5 h-5 w-5 flex-shrink-0 text-gray-400 dark:text-gray-500"
                     aria-hidden="true"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {country.name}
                     </div>
                     {country.nameLong !== country.name && (
-                      <div className="text-sm text-gray-500 truncate">
+                      <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
                         {country.nameLong}
                       </div>
                     )}
                   </div>
                   {selectedIndex === index && (
                     <ChevronRight
-                      className="h-5 w-5 text-blue-500 flex-shrink-0"
+                      className="h-5 w-5 text-blue-500 dark:text-blue-400 flex-shrink-0"
                       aria-hidden="true"
                     />
                   )}
@@ -272,20 +272,20 @@ export function MapSearchBar({ onCountrySelect }: MapSearchBarProps) {
 
           {/* Locate Me Button */}
           {!loading && countries.length > 0 && (
-            <div className="border-t border-gray-200 mt-2">
-              <button className="flex w-full items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors group">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 group-hover:bg-blue-200 transition-colors">
-                  <Locate className="h-4 w-4 text-blue-600" />
+            <div className="border-t border-gray-200 dark:border-gray-700 mt-2">
+              <button className="flex w-full items-center gap-3 px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/70 transition-colors">
+                  <Locate className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="flex-1 text-left">
-                  <div className="text-sm font-medium text-blue-600">
+                  <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
                     Locate Me
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
                     Find my current location
                   </div>
                 </div>
-                <ChevronRight className="h-5 w-5 text-blue-400" />
+                <ChevronRight className="h-5 w-5 text-blue-400 dark:text-blue-500" />
               </button>
             </div>
           )}
@@ -294,36 +294,36 @@ export function MapSearchBar({ onCountrySelect }: MapSearchBarProps) {
 
       {/* Map Tools Panel - Visible when search is expanded */}
       {isExpanded && (
-        <div className="mt-2 bg-white rounded-2xl shadow-lg transition-all duration-300">
+        <div className="mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-lg transition-all duration-300">
           <div className="px-3 py-3.5">
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
               Map Tools
             </div>
             <div className="grid grid-cols-4 gap-1">
-              <button className="flex flex-col items-center gap-1 px-2 py-2 rounded-2xl bg-stone-200 hover:bg-stone-300 transition-colors">
-                <Ruler className="h-4 w-4 text-blue-600" />
-                <span className="text-[10px] font-medium text-gray-700 text-center leading-tight">
+              <button className="flex flex-col items-center gap-1 px-2 py-2 rounded-2xl bg-stone-200 dark:bg-gray-700 hover:bg-stone-300 dark:hover:bg-gray-600 transition-colors">
+                <Ruler className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <span className="text-[10px] font-medium text-gray-700 dark:text-gray-300 text-center leading-tight">
                   Measure
                 </span>
               </button>
 
-              <button className="flex flex-col items-center gap-1 px-2 py-2 rounded-2xl bg-stone-200 hover:bg-stone-300 transition-colors">
-                <MapPin className="h-4 w-4 text-green-600" />
-                <span className="text-[10px] font-medium text-gray-700 text-center leading-tight">
+              <button className="flex flex-col items-center gap-1 px-2 py-2 rounded-2xl bg-stone-200 dark:bg-gray-700 hover:bg-stone-300 dark:hover:bg-gray-600 transition-colors">
+                <MapPin className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <span className="text-[10px] font-medium text-gray-700 dark:text-gray-300 text-center leading-tight">
                   Marker
                 </span>
               </button>
 
-              <button className="flex flex-col items-center gap-1 px-2 py-2 rounded-2xl bg-stone-200 hover:bg-stone-300 transition-colors">
-                <PencilRuler className="h-4 w-4 text-purple-600" />
-                <span className="text-[10px] font-medium text-gray-700 text-center leading-tight">
+              <button className="flex flex-col items-center gap-1 px-2 py-2 rounded-2xl bg-stone-200 dark:bg-gray-700 hover:bg-stone-300 dark:hover:bg-gray-600 transition-colors">
+                <PencilRuler className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                <span className="text-[10px] font-medium text-gray-700 dark:text-gray-300 text-center leading-tight">
                   Draw
                 </span>
               </button>
 
-              <button className="flex flex-col items-center gap-1 px-2 py-2 rounded-2xl bg-stone-200 hover:bg-stone-300 transition-colors">
-                <RotateCcw className="h-4 w-4 text-orange-600" />
-                <span className="text-[10px] font-medium text-gray-700 text-center leading-tight">
+              <button className="flex flex-col items-center gap-1 px-2 py-2 rounded-2xl bg-stone-200 dark:bg-gray-700 hover:bg-stone-300 dark:hover:bg-gray-600 transition-colors">
+                <RotateCcw className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                <span className="text-[10px] font-medium text-gray-700 dark:text-gray-300 text-center leading-tight">
                   Reset
                 </span>
               </button>

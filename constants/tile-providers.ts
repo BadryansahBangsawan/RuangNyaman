@@ -2,7 +2,7 @@
  * Tile provider configurations
  */
 
-import type { TileProvider } from '@/types';
+import type { TileProvider } from '@/types/map';
 
 /**
  * Available tile providers

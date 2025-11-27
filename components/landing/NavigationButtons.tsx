@@ -1,5 +1,5 @@
-import { MoveUpRight, Star } from 'lucide-react';
-import Link from 'next/link';
+import { MoveUpRight, Star } from "lucide-react";
+import Link from "next/link";
 
 /**
  * Navigation buttons for landing page (Server Component)
@@ -10,7 +10,7 @@ export function NavigationButtons() {
       {/* Go to Map button */}
       <Link
         href="/map"
-        className="group flex w-64 items-center justify-between rounded-full bg-chart-3/80 pl-6 pr-2 py-2 text-sm font-semibold text-zinc-900 transition-colors hover:bg-chart-3"
+        className="group flex w-64 items-center justify-between rounded-full bg-amber-600/80 pl-6 pr-2 py-2 text-sm font-semibold text-zinc-900 transition-colors hover:bg-chart-3"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -24,7 +24,7 @@ export function NavigationButtons() {
             clipRule="evenodd"
           />
         </svg>
-        <span className='text-white'>Go to Map</span>
+        <span className="text-white">Go to Map</span>
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-900">
           <div>
             <MoveUpRight className="h-4 w-4 text-white" />

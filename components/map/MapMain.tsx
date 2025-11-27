@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { LeafletMap } from "./LeafletMap";
 import { LeafletTileLayer } from "./LeafletTileLayer";
 import { LeafletGeoJSON } from "./LeafletGeoJSON";
@@ -8,15 +8,36 @@ import { MapSearchBar } from "./MapSearchBar";
 import { MapTopBar } from "./MapTopBar";
 import { MapLayersPanel } from "./MapLayersPanel";
 import { MapControls } from "./MapControls";
-import { getDefaultTileProvider } from "@/constants/tile-providers";
+import {
+  getTileProviderById,
+  getDefaultTileProvider,
+} from "@/constants/tile-providers";
+import { useTheme } from "@/hooks/useTheme";
 
 /**
- * MapMain - Main map component
+ * MapMain - Main map component with theme-aware tile provider
  */
 export function MapMain() {
   const [selectedCountry, setSelectedCountry] =
     useState<GeoJSON.Feature | null>(null);
-  const defaultProvider = getDefaultTileProvider();
+  const [selectedTileProviderId, setSelectedTileProviderId] =
+    useState<string>("osm");
+  const { theme } = useTheme();
+
+  // Get tile provider based on manual selection or theme
+  const tileProvider = useMemo(() => {
+    // If user manually selected a provider, use that
+    if (selectedTileProviderId) {
+      return (
+        getTileProviderById(selectedTileProviderId) || getDefaultTileProvider()
+      );
+    }
+    // Otherwise, auto-switch based on theme
+    if (theme === "dark") {
+      return getTileProviderById("dark") || getDefaultTileProvider();
+    }
+    return getDefaultTileProvider();
+  }, [selectedTileProviderId, theme]);
 
   const handleCountrySelect = async (countryId: string) => {
     try {
@@ -35,9 +56,9 @@ export function MapMain() {
       {/* Map */}
       <LeafletMap className="w-full h-full">
         <LeafletTileLayer
-          url={defaultProvider.url}
-          attribution={defaultProvider.attribution}
-          maxZoom={defaultProvider.maxZoom}
+          url={tileProvider.url}
+          attribution={tileProvider.attribution}
+          maxZoom={tileProvider.maxZoom}
         />
         <LeafletGeoJSON
           data={selectedCountry}
@@ -57,7 +78,10 @@ export function MapMain() {
       <MapTopBar />
 
       {/* Layers Panel */}
-      <MapLayersPanel />
+      <MapLayersPanel
+        selectedProviderId={selectedTileProviderId}
+        onProviderChange={setSelectedTileProviderId}
+      />
 
       {/* Map Controls */}
       <MapControls />

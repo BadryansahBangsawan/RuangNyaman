@@ -1,11 +1,11 @@
-import Image from 'next/image';
-import { Hero } from '@/components/landing/Hero';
-import { NavigationButtons } from '@/components/landing/NavigationButtons';
-import { TechStack } from '@/components/landing/TechStack';
+import Image from "next/image";
+import { Hero } from "@/components/landing/Hero";
+import { NavigationButtons } from "@/components/landing/NavigationButtons";
+import { TechStack } from "@/components/landing/TechStack";
 
 /**
  * Landing page component (Server Component)
- * 
+ *
  * Following Next.js 16 best practices:
  * - Server Component by default for better performance
  * - Only child components that need interactivity are Client Components

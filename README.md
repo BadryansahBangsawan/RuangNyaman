@@ -40,12 +40,14 @@ An enterprise-grade, production-ready Next.js template with vanilla Leaflet inte
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/yourusername/nextjs-leaflet.git
 cd nextjs-leaflet
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 # or
@@ -55,6 +57,7 @@ pnpm install
 ```
 
 3. Run the development server:
+
 ```bash
 npm run dev
 ```
@@ -64,8 +67,8 @@ npm run dev
 ### Basic Usage
 
 ```tsx
-import { MapProvider } from '@/contexts/MapContext';
-import { LeafletMap, LeafletTileLayer } from '@/components/map';
+import { MapProvider } from "@/contexts/MapContext";
+import { LeafletMap, LeafletTileLayer } from "@/components/map";
 
 export default function MyMapPage() {
   return (
@@ -74,7 +77,7 @@ export default function MyMapPage() {
         <LeafletMap center={[51.505, -0.09]} zoom={13}>
           <LeafletTileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; OpenStreetMap contributors'
+            attribution="&copy; OpenStreetMap contributors"
           />
         </LeafletMap>
       </MapProvider>
@@ -90,16 +93,19 @@ This template uses a clean abstraction layer to wrap Leaflet's imperative API wi
 ### Key Design Patterns
 
 **Context-Based State Management**
+
 - `MapProvider` manages the Leaflet map instance
 - Child components access the map via `useLeafletMap` hook
 - Prevents prop drilling and enables flexible composition
 
 **SSR-Safe Implementation**
+
 - Dynamic imports of Leaflet library prevent SSR errors
 - Client components marked with `'use client'`
 - Container refs ensure DOM elements exist before initialization
 
 **Separation of Concerns**
+
 - `/components/map` - Map-specific React components
 - `/contexts` - State management (Map, Theme)
 - `/hooks` - Reusable logic (useLeafletMap, useTheme)
@@ -122,15 +128,12 @@ MapProvider (Context)
 ### Adding Markers
 
 ```tsx
-import { LeafletMarker } from '@/components/map';
+import { LeafletMarker } from "@/components/map";
 
 <LeafletMap>
   <LeafletTileLayer url={tileUrl} />
-  <LeafletMarker
-    position={[51.5, -0.09]}
-    popup="Hello London!"
-  />
-</LeafletMap>
+  <LeafletMarker position={[51.5, -0.09]} popup="Hello London!" />
+</LeafletMap>;
 ```
 
 ### Draggable Markers with Callbacks
@@ -143,17 +146,17 @@ const [position, setPosition] = useState<[number, number]>([51.5, -0.09]);
   draggable={true}
   onDragEnd={(newPos) => setPosition(newPos)}
   popup={`Location: ${position[0].toFixed(4)}, ${position[1].toFixed(4)}`}
-/>
+/>;
 ```
 
 ### Switching Tile Layers
 
 ```tsx
-import { useState } from 'react';
-import { TILE_PROVIDERS } from '@/constants/tile-providers';
+import { useState } from "react";
+import { TILE_PROVIDERS } from "@/constants/tile-providers";
 
-const [activeProvider, setActiveProvider] = useState('osm');
-const provider = TILE_PROVIDERS.find(p => p.id === activeProvider);
+const [activeProvider, setActiveProvider] = useState("osm");
+const provider = TILE_PROVIDERS.find((p) => p.id === activeProvider);
 
 <LeafletMap>
   <LeafletTileLayer
@@ -161,34 +164,32 @@ const provider = TILE_PROVIDERS.find(p => p.id === activeProvider);
     attribution={provider.attribution}
     maxZoom={provider.maxZoom}
   />
-</LeafletMap>
+</LeafletMap>;
 ```
 
 ### Error Handling
 
 ```tsx
-import { MapErrorBoundary } from '@/components/map';
+import { MapErrorBoundary } from "@/components/map";
 
 <MapErrorBoundary>
   <MapProvider>
-    <LeafletMap>
-      {/* Your map components */}
-    </LeafletMap>
+    <LeafletMap>{/* Your map components */}</LeafletMap>
   </MapProvider>
-</MapErrorBoundary>
+</MapErrorBoundary>;
 ```
 
 ### Loading States
 
 ```tsx
-import { MapLoadingSpinner } from '@/components/map';
+import { MapLoadingSpinner } from "@/components/map";
 
 <MapProvider>
   <LeafletMap>
     <LeafletTileLayer url={tileUrl} />
   </LeafletMap>
   <MapLoadingSpinner />
-</MapProvider>
+</MapProvider>;
 ```
 
 ## 🧩 Components
@@ -235,12 +236,12 @@ Add custom tile providers in `constants/tile-providers.ts`:
 ```typescript
 export const TILE_PROVIDERS: TileProvider[] = [
   {
-    id: 'custom',
-    name: 'Custom Map',
-    url: 'https://your-tile-server/{z}/{x}/{y}.png',
-    attribution: '© Your Attribution',
+    id: "custom",
+    name: "Custom Map",
+    url: "https://your-tile-server/{z}/{x}/{y}.png",
+    attribution: "© Your Attribution",
     maxZoom: 19,
-    category: 'custom',
+    category: "custom",
   },
   // ... existing providers
 ];
@@ -300,6 +301,7 @@ npm run lint
 ### Adding New Components
 
 See [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md) for step-by-step instructions on:
+
 - Creating custom map controls
 - Adding drawing tools
 - Integrating geocoding
@@ -316,12 +318,14 @@ See [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md) for step-by-step instructions on:
 ### Other Platforms
 
 This is a standard Next.js application and can be deployed to:
+
 - Netlify
 - AWS Amplify
 - Google Cloud Platform
 - Self-hosted with Node.js
 
 Build the application:
+
 ```bash
 npm run build
 npm start
