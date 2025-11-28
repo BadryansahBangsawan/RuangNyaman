@@ -19,6 +19,8 @@ interface Country {
 
 interface MapSearchBarProps {
   onCountrySelect: (countryId: string) => void;
+  selectedCountry?: GeoJSON.Feature | null;
+  onClearSelection?: () => void;
 }
 
 /**
@@ -35,7 +37,11 @@ interface MapSearchBarProps {
  * - Accessibility support with ARIA attributes
  * - Auto-scroll selected item into view
  */
-export function MapSearchBar({ onCountrySelect }: MapSearchBarProps) {
+export function MapSearchBar({
+  onCountrySelect,
+  selectedCountry,
+  onClearSelection,
+}: MapSearchBarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [countries, setCountries] = useState<Country[]>([]);
@@ -151,6 +157,9 @@ export function MapSearchBar({ onCountrySelect }: MapSearchBarProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isExpanded]);
 
+  const selectedCountryName = selectedCountry?.properties?.NAME || "";
+  const hasSelection = !!selectedCountry;
+
   return (
     <div className="search-container absolute left-0 right-0 sm:left-4 sm:right-auto top-3 z-[1001] px-4 sm:px-0">
       {/* Search Box - always visible */}
@@ -159,27 +168,60 @@ export function MapSearchBar({ onCountrySelect }: MapSearchBarProps) {
           isExpanded ? "rounded-t-lg" : "rounded-full"
         } w-full sm:w-[360px]`}
       >
-        <input
-          ref={searchInputRef}
-          type="text"
-          placeholder="Search on maps"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onFocus={() => setIsExpanded(true)}
-          onKeyDown={handleKeyDown}
-          className="border-none bg-transparent text-sm text-gray-800 dark:text-gray-200 font-semibold outline-none placeholder:text-gray-500 dark:placeholder:text-gray-200 transition-all duration-300 w-full"
-          aria-label="Search countries"
-          aria-expanded={isExpanded}
-          aria-controls="search-results"
-          aria-activedescendant={
-            selectedIndex >= 0 ? `country-${selectedIndex}` : undefined
-          }
-          autoComplete="off"
-        />
-        <Search
-          className="h-5 w-5 flex-shrink-0 text-gray-400 dark:text-gray-500"
-          aria-hidden="true"
-        />
+        {hasSelection ? (
+          <>
+            {/* Selected Country Display */}
+            <span className="text-sm text-gray-800 dark:text-gray-200 font-semibold flex-1 truncate">
+              {selectedCountryName}
+            </span>
+            <button
+              onClick={() => {
+                onClearSelection?.();
+                setSearchQuery("");
+                setIsExpanded(false);
+              }}
+              className="h-5 w-5 flex-shrink-0 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+              aria-label="Clear selection"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </>
+        ) : (
+          <>
+            {/* Search Input */}
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search on maps"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsExpanded(true)}
+              onKeyDown={handleKeyDown}
+              className="border-none bg-transparent text-sm text-gray-800 dark:text-gray-200 font-semibold outline-none placeholder:text-gray-500 dark:placeholder:text-gray-200 transition-all duration-300 w-full"
+              aria-label="Search countries"
+              aria-expanded={isExpanded}
+              aria-controls="search-results"
+              aria-activedescendant={
+                selectedIndex >= 0 ? `country-${selectedIndex}` : undefined
+              }
+              autoComplete="off"
+            />
+            <Search
+              className="h-5 w-5 flex-shrink-0 text-gray-400 dark:text-gray-500"
+              aria-hidden="true"
+            />
+          </>
+        )}
         <div className="ml-2 flex items-center gap-2 border-l border-gray-200 dark:border-gray-700 pl-3">
           <button
             className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded transition-all"

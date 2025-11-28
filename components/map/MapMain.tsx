@@ -8,6 +8,7 @@ import { MapSearchBar } from "./MapSearchBar";
 import { MapTopBar } from "./MapTopBar";
 import { MapLayersPanel } from "./MapLayersPanel";
 import { MapControls } from "./MapControls";
+import { MapDetailsPanel } from "./MapDetailsPanel";
 import { useMapTileProvider } from "@/hooks/useMapTileProvider";
 
 /**
@@ -54,7 +55,11 @@ export function MapMain() {
       </LeafletMap>
 
       {/* Search Bar */}
-      <MapSearchBar onCountrySelect={handleCountrySelect} />
+      <MapSearchBar
+        onCountrySelect={handleCountrySelect}
+        selectedCountry={selectedCountry}
+        onClearSelection={() => setSelectedCountry(null)}
+      />
 
       {/* Top Bar */}
       <MapTopBar />
@@ -67,6 +72,12 @@ export function MapMain() {
 
       {/* Map Controls */}
       <MapControls />
+
+      {/* Country Details Panel */}
+      <MapDetailsPanel
+        country={selectedCountry}
+        onClose={() => setSelectedCountry(null)}
+      />
     </div>
   );
 }
