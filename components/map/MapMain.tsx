@@ -232,16 +232,22 @@ export function MapMain() {
         pois.map((p) => `${p.title.toLowerCase()}::${p.lat.toFixed(4)}::${p.lng.toFixed(4)}`)
       );
 
-      const inferCategory = (q: string): POICategory => {
-        const lower = q.toLowerCase();
-        if (lower.includes("hotel") || lower.includes("villa") || lower.includes("resort")) return "lodging";
-        if (lower.includes("coffee") || lower.includes("cafe") || lower.includes("restaurant") || lower.includes("food")) return "food-drink";
-        if (lower.includes("pantai") || lower.includes("gunung") || lower.includes("air terjun") || lower.includes("nature")) return "nature";
-        if (lower.includes("wisata") || lower.includes("tour")) return "tourism";
+      const inferCategory = (text: string): POICategory => {
+        const lower = text.toLowerCase();
+
+        if (/(hotel|villa|resort|penginapan|homestay|hostel|inn)/.test(lower)) return "lodging";
+        if (/(coffee|cafe|restaurant|food|bakery|warung|bar|dining)/.test(lower)) return "food-drink";
+        if (/(beach|pantai|gunung|mount|waterfall|air terjun|hutan|forest|lake|danau|nature|park|taman)/.test(lower)) return "nature";
+        if (/(mall|shop|store|pasar|market)/.test(lower)) return "shopping";
+        if (/(station|terminal|airport|pelabuhan|port|bus|train|stasiun)/.test(lower)) return "transport";
+        if (/(hospital|clinic|klinik|pharmacy|apotik)/.test(lower)) return "health";
+        if (/(masjid|mosque|church|gereja|temple|pura|vihara)/.test(lower)) return "religion";
+        if (/(school|campus|university|sekolah)/.test(lower)) return "education";
+        if (/(tour|wisata|attraction|museum|landmark|monument)/.test(lower)) return "tourism";
+
         return "tourism";
       };
 
-      const category = inferCategory(query);
       let added = 0;
 
       for (const row of places) {
@@ -249,6 +255,8 @@ export function MapMain() {
 
         const key = `${row.name.toLowerCase()}::${row.lat.toFixed(4)}::${row.lng.toFixed(4)}`;
         if (existing.has(key)) continue;
+
+        const category = inferCategory(`${query} ${row.name} ${row.location ?? ""}`);
 
         addPOI(
           row.name,
