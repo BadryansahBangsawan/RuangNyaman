@@ -28,11 +28,20 @@ export async function GET(request: NextRequest) {
 
   const query = (request.nextUrl.searchParams.get("q") || "wisata").trim();
   const limit = Math.min(Number(request.nextUrl.searchParams.get("limit") || 20), 50);
+  const lat = Number(request.nextUrl.searchParams.get("lat") || "");
+  const lng = Number(request.nextUrl.searchParams.get("lng") || "");
+
+  const hasCoords = Number.isFinite(lat) && Number.isFinite(lng);
 
   const url = new URL("https://places-api.foursquare.com/places/search");
   url.searchParams.set("query", query);
-  url.searchParams.set("near", "Indonesia");
   url.searchParams.set("limit", String(limit));
+  if (hasCoords) {
+    url.searchParams.set("ll", `${lat},${lng}`);
+    url.searchParams.set("radius", "50000");
+  } else {
+    url.searchParams.set("near", "Indonesia");
+  }
 
   const res = await fetch(url.toString(), {
     headers: {
@@ -54,8 +63,14 @@ export async function GET(request: NextRequest) {
   const data = (await res.json()) as { results?: FoursquareResult[]; data?: FoursquareResult[] };
   const rows = data.results ?? data.data ?? [];
 
+  // Hanya tampilkan data di Indonesia (abaikan cafe, hotel, wisata, transportasi dari luar negeri)
+  const isInIndonesia = (r: FoursquareResult) => {
+    const country = (r.location?.country ?? "").toLowerCase();
+    return country === "indonesia" || country === "id";
+  };
+
   const places = rows
-    .filter((r) => r.name)
+    .filter((r) => r.name && isInIndonesia(r))
     .map((r) => ({
       fsq_id: r.fsq_id,
       name: r.name as string,

@@ -18,6 +18,7 @@ import { useMapContextMenu } from "@/hooks/useMapContextMenu";
 import { useMapMarkers } from "@/hooks/useMapMarkers";
 import { usePOIManager } from "@/hooks/usePOIManager";
 import { useGeolocation } from "@/hooks/useGeolocation";
+import { useLeafletMap } from "@/hooks/useLeafletMap";
 import type { POICategory } from "@/types/poi";
 
 // Memoized style object to prevent unnecessary re-renders
@@ -83,6 +84,7 @@ export function MapMain() {
   } = usePOIManager();
 
   const { locateUser, isAvailable } = useGeolocation();
+  const map = useLeafletMap();
 
   useEffect(() => {
     if (!isAvailable) return;
@@ -308,6 +310,71 @@ export function MapMain() {
     [handleOpenPOIPanel]
   );
 
+  const distanceInKm = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+    const toRad = (v: number) => (v * Math.PI) / 180;
+    const R = 6371;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+
+  const handleNearbySearch = useCallback(
+    async (query: string) => {
+      if (!map) return;
+
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 30000,
+        });
+      }).catch(() => null);
+
+      if (!position) {
+        toast.error("Lokasi tidak tersedia. Izinkan location permission dulu.");
+        return;
+      }
+
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      const res = await fetch(
+        `/api/foursquare/search?q=${encodeURIComponent(query)}&lat=${lat}&lng=${lng}&limit=20`,
+        { cache: "no-store" }
+      );
+
+      if (!res.ok) {
+        toast.error("Gagal mencari lokasi terdekat");
+        return;
+      }
+
+      const data = (await res.json()) as {
+        places?: Array<{ name: string; location?: string; lat: number | null; lng: number | null }>;
+      };
+
+      const candidates = (data.places ?? []).filter(
+        (p): p is { name: string; location?: string; lat: number; lng: number } =>
+          typeof p.lat === "number" && typeof p.lng === "number"
+      );
+
+      if (candidates.length === 0) {
+        toast.error("Tidak ada hasil terdekat untuk pencarian ini.");
+        return;
+      }
+
+      candidates.sort((a, b) => distanceInKm(lat, lng, a.lat, a.lng) - distanceInKm(lat, lng, b.lat, b.lng));
+      const nearest = candidates[0];
+      const km = distanceInKm(lat, lng, nearest.lat, nearest.lng);
+
+      map.flyTo([nearest.lat, nearest.lng], 15, { duration: 1.4 });
+      toast.success(`${nearest.name} • ${km.toFixed(1)} km dari lokasimu`);
+    },
+    [map]
+  );
+
   // Memoize tile layer props to prevent unnecessary updates
   const tileLayerProps = useMemo(
     () => ({
@@ -342,6 +409,7 @@ export function MapMain() {
         onClearSelection={handleClearSelection}
         onMeasurementClick={handleMeasurementOpen}
         onPOIClick={() => handleOpenPOIPanel()}
+        onNearbySearch={handleNearbySearch}
         isPOIPanelOpen={isPOIPanelOpen}
         onClosePOIPanel={handleClosePOIPanel}
       />

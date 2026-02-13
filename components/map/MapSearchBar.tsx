@@ -25,6 +25,7 @@ interface MapSearchBarProps {
   onClearSelection?: () => void;
   onMeasurementClick?: () => void;
   onPOIClick?: () => void;
+  onNearbySearch?: (query: string) => void;
   isPOIPanelOpen?: boolean;
   onClosePOIPanel?: () => void;
 }
@@ -49,6 +50,7 @@ export function MapSearchBar({
   onClearSelection,
   onMeasurementClick,
   onPOIClick,
+  onNearbySearch,
   isPOIPanelOpen,
   onClosePOIPanel,
 }: MapSearchBarProps) {
@@ -126,6 +128,9 @@ export function MapSearchBar({
           e.preventDefault();
           if (selectedIndex >= 0 && selectedIndex < countries.length) {
             handleCountrySelect(countries[selectedIndex].id);
+          } else if (searchQuery.trim()) {
+            onNearbySearch?.(searchQuery.trim());
+            setIsExpanded(false);
           }
           break;
         case "Escape":
@@ -136,7 +141,7 @@ export function MapSearchBar({
           break;
       }
     },
-    [isExpanded, countries, selectedIndex, handleCountrySelect]
+    [isExpanded, countries, selectedIndex, handleCountrySelect, onNearbySearch, searchQuery]
   );
 
   // Scroll selected item into view
@@ -365,6 +370,30 @@ export function MapSearchBar({
                 </button>
               ))}
             </>
+          )}
+
+          {/* Nearby Search Shortcut */}
+          {!loading && searchQuery.trim() && (
+            <div className="border-t border-gray-200 dark:border-gray-700 mt-2">
+              <button
+                onClick={() => {
+                  onNearbySearch?.(searchQuery.trim());
+                  setIsExpanded(false);
+                }}
+                className="flex w-full items-center gap-3 px-4 py-3 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors group"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50">
+                  <Search className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    Cari terdekat: {searchQuery}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Gunakan lokasi saya (Indonesia)</div>
+                </div>
+                <ChevronRight className="h-5 w-5 text-emerald-400 dark:text-emerald-500" />
+              </button>
+            </div>
           )}
 
           {/* Locate Me Button */}
