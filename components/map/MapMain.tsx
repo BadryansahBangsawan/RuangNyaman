@@ -321,6 +321,15 @@ export function MapMain() {
     return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   };
 
+  const handlePlaceSelect = useCallback(
+    (place: { name: string; lat: number; lng: number; location?: string }) => {
+      if (!map) return;
+      map.flyTo([place.lat, place.lng], 16, { duration: 1.2 });
+      toast.success(place.location ? `${place.name} • ${place.location}` : place.name);
+    },
+    [map]
+  );
+
   const handleNearbySearch = useCallback(
     async (query: string) => {
       if (!map) return;
@@ -410,6 +419,7 @@ export function MapMain() {
         onMeasurementClick={handleMeasurementOpen}
         onPOIClick={() => handleOpenPOIPanel()}
         onNearbySearch={handleNearbySearch}
+        onPlaceSelect={handlePlaceSelect}
         isPOIPanelOpen={isPOIPanelOpen}
         onClosePOIPanel={handleClosePOIPanel}
       />

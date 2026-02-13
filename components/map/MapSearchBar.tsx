@@ -19,6 +19,14 @@ interface Country {
   nameLong: string;
 }
 
+interface PlaceSuggestion {
+  fsq_id?: string;
+  name: string;
+  location?: string;
+  lat: number | null;
+  lng: number | null;
+}
+
 interface MapSearchBarProps {
   onCountrySelect: (countryId: string) => void;
   selectedCountry?: GeoJSON.Feature | null;
@@ -26,6 +34,7 @@ interface MapSearchBarProps {
   onMeasurementClick?: () => void;
   onPOIClick?: () => void;
   onNearbySearch?: (query: string) => void;
+  onPlaceSelect?: (place: { name: string; lat: number; lng: number; location?: string }) => void;
   isPOIPanelOpen?: boolean;
   onClosePOIPanel?: () => void;
 }
@@ -51,12 +60,14 @@ export function MapSearchBar({
   onMeasurementClick,
   onPOIClick,
   onNearbySearch,
+  onPlaceSelect,
   isPOIPanelOpen,
   onClosePOIPanel,
 }: MapSearchBarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [countries, setCountries] = useState<Country[]>([]);
+  const [places, setPlaces] = useState<PlaceSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
@@ -65,36 +76,59 @@ export function MapSearchBar({
   const resultsRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // Fetch countries when expanded or search query changes
+  // Fetch search data when expanded or search query changes
   useEffect(() => {
     if (!isExpanded) return;
 
-    const fetchCountries = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
         const query = searchQuery.trim();
-        const url = query
-          ? `/api/countries/search?q=${encodeURIComponent(query)}`
-          : "/api/countries/search";
 
-        const response = await fetch(url);
-        const data = await response.json();
-        setCountries(data);
+        if (!query) {
+          const countryRes = await fetch("/api/countries/search");
+          const countryData = await countryRes.json();
+          setCountries(countryData);
+          setPlaces([]);
+          return;
+        }
+
+        const position = await new Promise<GeolocationPosition | null>((resolve) => {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => resolve(pos),
+            () => resolve(null),
+            { enableHighAccuracy: true, timeout: 5000, maximumAge: 30000 }
+          );
+        });
+
+        const fsqUrl = new URL("/api/foursquare/search", window.location.origin);
+        fsqUrl.searchParams.set("q", query);
+        fsqUrl.searchParams.set("limit", "8");
+        if (position) {
+          fsqUrl.searchParams.set("lat", String(position.coords.latitude));
+          fsqUrl.searchParams.set("lng", String(position.coords.longitude));
+        }
+
+        const [placeRes, countryRes] = await Promise.all([
+          fetch(fsqUrl.toString()),
+          fetch(`/api/countries/search?q=${encodeURIComponent(query)}`),
+        ]);
+
+        const placeData = (await placeRes.json()) as { places?: PlaceSuggestion[] };
+        const countryData = (await countryRes.json()) as Country[];
+
+        setPlaces(placeData.places ?? []);
+        setCountries(countryData ?? []);
       } catch {
         setCountries([]);
+        setPlaces([]);
       } finally {
         setLoading(false);
       }
     };
 
-    // Fetch immediately when first expanded
-    if (searchQuery === "") {
-      fetchCountries();
-    } else {
-      // Debounce when searching
-      const timer = setTimeout(fetchCountries, 150);
-      return () => clearTimeout(timer);
-    }
+    const timer = setTimeout(fetchData, searchQuery.trim() ? 250 : 100);
+    return () => clearTimeout(timer);
   }, [searchQuery, isExpanded]);
 
   // Handle country selection
@@ -111,28 +145,44 @@ export function MapSearchBar({
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!isExpanded || countries.length === 0) return;
+      if (!isExpanded) return;
+      const total = places.length + countries.length;
+      if (total === 0 && e.key !== "Escape") return;
 
       switch (e.key) {
         case "ArrowDown":
           e.preventDefault();
-          setSelectedIndex((prev) =>
-            prev < countries.length - 1 ? prev + 1 : prev
-          );
+          setSelectedIndex((prev) => (prev < total - 1 ? prev + 1 : prev));
           break;
         case "ArrowUp":
           e.preventDefault();
           setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
           break;
-        case "Enter":
+        case "Enter": {
           e.preventDefault();
-          if (selectedIndex >= 0 && selectedIndex < countries.length) {
-            handleCountrySelect(countries[selectedIndex].id);
+          if (selectedIndex >= 0 && selectedIndex < places.length) {
+            const place = places[selectedIndex];
+            if (typeof place.lat === "number" && typeof place.lng === "number") {
+              onPlaceSelect?.({
+                name: place.name,
+                lat: place.lat,
+                lng: place.lng,
+                location: place.location,
+              });
+              setIsExpanded(false);
+            }
+            return;
+          }
+
+          const countryIndex = selectedIndex - places.length;
+          if (countryIndex >= 0 && countryIndex < countries.length) {
+            handleCountrySelect(countries[countryIndex].id);
           } else if (searchQuery.trim()) {
             onNearbySearch?.(searchQuery.trim());
             setIsExpanded(false);
           }
           break;
+        }
         case "Escape":
           e.preventDefault();
           setIsExpanded(false);
@@ -141,7 +191,7 @@ export function MapSearchBar({
           break;
       }
     },
-    [isExpanded, countries, selectedIndex, handleCountrySelect, onNearbySearch, searchQuery]
+    [isExpanded, places, countries, selectedIndex, onPlaceSelect, handleCountrySelect, onNearbySearch, searchQuery]
   );
 
   // Scroll selected item into view
@@ -261,9 +311,7 @@ export function MapSearchBar({
               className="border-none bg-transparent text-base sm:text-sm text-gray-800 dark:text-gray-200 font-semibold outline-none placeholder:text-gray-500 dark:placeholder:text-gray-200 transition-all duration-300 w-full"
               aria-label="Search countries"
               aria-controls="search-results"
-              aria-activedescendant={
-                selectedIndex >= 0 ? `country-${selectedIndex}` : undefined
-              }
+              aria-activedescendant={selectedIndex >= 0 ? `result-${selectedIndex}` : undefined}
               autoComplete="off"
             />
             <Search
@@ -317,7 +365,7 @@ export function MapSearchBar({
             </div>
           )}
 
-          {!loading && countries.length === 0 && searchQuery && (
+          {!loading && countries.length === 0 && places.length === 0 && searchQuery && (
             <div
               className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
               role="status"
@@ -327,48 +375,97 @@ export function MapSearchBar({
             </div>
           )}
 
-          {/* Search Results / Countries */}
+          {/* Place suggestions */}
+          {!loading && places.length > 0 && (
+            <>
+              <div className="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+                Tempat terdekat
+              </div>
+              {places.map((place, index) => {
+                const active = selectedIndex === index;
+                return (
+                  <button
+                    key={`${place.fsq_id ?? place.name}-${index}`}
+                    ref={(el) => {
+                      itemRefs.current[index] = el;
+                    }}
+                    id={`result-${index}`}
+                    role="option"
+                    aria-selected={active}
+                    onClick={() => {
+                      if (typeof place.lat === "number" && typeof place.lng === "number") {
+                        onPlaceSelect?.({
+                          name: place.name,
+                          lat: place.lat,
+                          lng: place.lng,
+                          location: place.location,
+                        });
+                        setIsExpanded(false);
+                      }
+                    }}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                    className={`flex w-full items-start gap-4 px-4 py-3 text-left transition-colors ${
+                      active
+                        ? "bg-emerald-50 dark:bg-emerald-900/30 border-l-2 border-emerald-500 dark:border-emerald-400"
+                        : "hover:bg-gray-50 dark:hover:bg-gray-700 border-l-2 border-transparent"
+                    }`}
+                  >
+                    <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-500" aria-hidden="true" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{place.name}</div>
+                      {place.location && (
+                        <div className="text-sm text-gray-500 dark:text-gray-400 truncate">{place.location}</div>
+                      )}
+                    </div>
+                    {active && <ChevronRight className="h-5 w-5 text-emerald-500 flex-shrink-0" aria-hidden="true" />}
+                  </button>
+                );
+              })}
+            </>
+          )}
+
+          {/* Country suggestions */}
           {!loading && countries.length > 0 && (
             <>
-              {countries.map((country, index) => (
-                <button
-                  key={country.id}
-                  ref={(el) => {
-                    itemRefs.current[index] = el;
-                  }}
-                  id={`country-${index}`}
-                  role="option"
-                  aria-selected={selectedIndex === index}
-                  onClick={() => handleCountrySelect(country.id)}
-                  onMouseEnter={() => setSelectedIndex(index)}
-                  className={`flex w-full items-start gap-4 px-4 py-3 text-left transition-colors ${
-                    selectedIndex === index
-                      ? "bg-blue-50 dark:bg-blue-900/30 border-l-2 border-blue-500 dark:border-blue-400"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-700 border-l-2 border-transparent"
-                  }`}
-                >
-                  <MapPin
-                    className="mt-0.5 h-5 w-5 flex-shrink-0 text-gray-400 dark:text-gray-500"
-                    aria-hidden="true"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {country.name}
-                    </div>
-                    {country.nameLong !== country.name && (
-                      <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                        {country.nameLong}
-                      </div>
-                    )}
-                  </div>
-                  {selectedIndex === index && (
-                    <ChevronRight
-                      className="h-5 w-5 text-blue-500 dark:text-blue-400 flex-shrink-0"
+              <div className="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">
+                Negara
+              </div>
+              {countries.map((country, index) => {
+                const rowIndex = places.length + index;
+                const active = selectedIndex === rowIndex;
+                return (
+                  <button
+                    key={country.id}
+                    ref={(el) => {
+                      itemRefs.current[rowIndex] = el;
+                    }}
+                    id={`result-${rowIndex}`}
+                    role="option"
+                    aria-selected={active}
+                    onClick={() => handleCountrySelect(country.id)}
+                    onMouseEnter={() => setSelectedIndex(rowIndex)}
+                    className={`flex w-full items-start gap-4 px-4 py-3 text-left transition-colors ${
+                      active
+                        ? "bg-blue-50 dark:bg-blue-900/30 border-l-2 border-blue-500 dark:border-blue-400"
+                        : "hover:bg-gray-50 dark:hover:bg-gray-700 border-l-2 border-transparent"
+                    }`}
+                  >
+                    <MapPin
+                      className="mt-0.5 h-5 w-5 flex-shrink-0 text-gray-400 dark:text-gray-500"
                       aria-hidden="true"
                     />
-                  )}
-                </button>
-              ))}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{country.name}</div>
+                      {country.nameLong !== country.name && (
+                        <div className="text-sm text-gray-500 dark:text-gray-400 truncate">{country.nameLong}</div>
+                      )}
+                    </div>
+                    {active && (
+                      <ChevronRight className="h-5 w-5 text-blue-500 dark:text-blue-400 flex-shrink-0" aria-hidden="true" />
+                    )}
+                  </button>
+                );
+              })}
             </>
           )}
 
@@ -397,7 +494,7 @@ export function MapSearchBar({
           )}
 
           {/* Locate Me Button */}
-          {!loading && countries.length > 0 && (
+          {!loading && (countries.length > 0 || places.length > 0) && (
             <div className="border-t border-gray-200 dark:border-gray-700 mt-2">
               <button
                 onClick={handleLocateMe}
