@@ -321,13 +321,60 @@ export function MapMain() {
     return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   };
 
+  const getRouteSummary = useCallback(async (fromLat: number, fromLng: number, toLat: number, toLng: number) => {
+    try {
+      const res = await fetch(
+        `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=false`,
+        { cache: "no-store" }
+      );
+      if (!res.ok) return null;
+
+      const data = (await res.json()) as {
+        routes?: Array<{ distance?: number; duration?: number }>;
+      };
+
+      const route = data.routes?.[0];
+      if (!route?.distance || !route?.duration) return null;
+
+      return {
+        km: route.distance / 1000,
+        minutes: Math.round(route.duration / 60),
+      };
+    } catch {
+      return null;
+    }
+  }, []);
+
   const handlePlaceSelect = useCallback(
-    (place: { name: string; lat: number; lng: number; location?: string }) => {
+    async (place: { name: string; lat: number; lng: number; location?: string }) => {
       if (!map) return;
       map.flyTo([place.lat, place.lng], 16, { duration: 1.2 });
+
+      const position = await new Promise<GeolocationPosition | null>((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve(pos),
+          () => resolve(null),
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+        );
+      });
+
+      if (position) {
+        const fromLat = position.coords.latitude;
+        const fromLng = position.coords.longitude;
+        const route = await getRouteSummary(fromLat, fromLng, place.lat, place.lng);
+        if (route) {
+          toast.success(`${place.name} • ${route.km.toFixed(1)} km • ${route.minutes} menit`);
+          return;
+        }
+
+        const km = distanceInKm(fromLat, fromLng, place.lat, place.lng);
+        toast.success(`${place.name} • ${km.toFixed(1)} km`);
+        return;
+      }
+
       toast.success(place.location ? `${place.name} • ${place.location}` : place.name);
     },
-    [map]
+    [map, getRouteSummary]
   );
 
   const handleNearbySearch = useCallback(
@@ -377,11 +424,16 @@ export function MapMain() {
       candidates.sort((a, b) => distanceInKm(lat, lng, a.lat, a.lng) - distanceInKm(lat, lng, b.lat, b.lng));
       const nearest = candidates[0];
       const km = distanceInKm(lat, lng, nearest.lat, nearest.lng);
+      const route = await getRouteSummary(lat, lng, nearest.lat, nearest.lng);
 
       map.flyTo([nearest.lat, nearest.lng], 15, { duration: 1.4 });
-      toast.success(`${nearest.name} • ${km.toFixed(1)} km dari lokasimu`);
+      if (route) {
+        toast.success(`${nearest.name} • ${route.km.toFixed(1)} km • ${route.minutes} menit`);
+      } else {
+        toast.success(`${nearest.name} • ${km.toFixed(1)} km dari lokasimu`);
+      }
     },
-    [map]
+    [map, getRouteSummary]
   );
 
   // Memoize tile layer props to prevent unnecessary updates
