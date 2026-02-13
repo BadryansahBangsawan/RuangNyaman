@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 type FoursquareResult = {
   fsq_id?: string;
+  fsq_place_id?: string;
   name?: string;
+  latitude?: number;
+  longitude?: number;
   location?: {
     formatted_address?: string;
     locality?: string;
@@ -72,13 +75,13 @@ export async function GET(request: NextRequest) {
   const places = rows
     .filter((r) => r.name && isInIndonesia(r))
     .map((r) => ({
-      fsq_id: r.fsq_id,
+      fsq_id: r.fsq_id ?? r.fsq_place_id,
       name: r.name as string,
       location:
         r.location?.formatted_address ||
         [r.location?.locality, r.location?.region, r.location?.country].filter(Boolean).join(", "),
-      lat: r.geocodes?.main?.latitude ?? null,
-      lng: r.geocodes?.main?.longitude ?? null,
+      lat: r.latitude ?? r.geocodes?.main?.latitude ?? null,
+      lng: r.longitude ?? r.geocodes?.main?.longitude ?? null,
     }));
 
   return NextResponse.json({
