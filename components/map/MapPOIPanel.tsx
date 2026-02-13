@@ -13,6 +13,7 @@ import {
   Edit2,
   MapPin,
   XCircle,
+  Sparkles,
 } from "lucide-react";
 import { Drawer } from "vaul";
 import { toast } from "sonner";
@@ -44,6 +45,7 @@ interface MapPOIPanelProps {
   onClearAll: () => void;
   onExport: () => void;
   onImport: (file: File) => void;
+  onImportFoursquare?: (query: string) => Promise<void>;
   onFlyTo: (poi: POI) => void;
   onRequestLocation?: () => void;
   onClearCoordinates?: () => void;
@@ -163,6 +165,7 @@ export const MapPOIPanel = memo(function MapPOIPanel({
   onClearAll,
   onExport,
   onImport,
+  onImportFoursquare,
   onFlyTo,
   onRequestLocation,
   onClearCoordinates,
@@ -176,6 +179,7 @@ export const MapPOIPanel = memo(function MapPOIPanel({
 }: MapPOIPanelProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [editingPOI, setEditingPOI] = useState<POI | null>(null);
+  const [isImportingFoursquare, setIsImportingFoursquare] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const snapPoints = [0.4, 0.7, 1];
   const [snap, setSnap] = useState<number | string | null>(snapPoints[1]);
@@ -358,6 +362,24 @@ export const MapPOIPanel = memo(function MapPOIPanel({
     [onImport]
   );
 
+  const handleImportFoursquare = useCallback(async () => {
+    if (!onImportFoursquare) return;
+
+    const query = window.prompt("Import dari Foursquare (Indonesia)", "coffee");
+    if (!query) return;
+
+    try {
+      setIsImportingFoursquare(true);
+      await onImportFoursquare(query);
+      toast.success(`Imported places for "${query}"`);
+    } catch (error) {
+      console.error("Failed to import from Foursquare:", error);
+      toast.error("Failed to import from Foursquare");
+    } finally {
+      setIsImportingFoursquare(false);
+    }
+  }, [onImportFoursquare]);
+
   /**
    * Handle delete POI with toast
    */
@@ -537,7 +559,7 @@ export const MapPOIPanel = memo(function MapPOIPanel({
       <>
         {/* Action Buttons */}
         <div className="px-6 py-4 border-b dark:border-gray-800">
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             <button
               onClick={handleAddMode}
               className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
@@ -554,6 +576,16 @@ export const MapPOIPanel = memo(function MapPOIPanel({
               <Upload className="h-5 w-5 text-green-600 dark:text-green-400" />
               <span className="text-[10px] font-medium text-gray-700 dark:text-gray-300 leading-tight">
                 Import
+              </span>
+            </button>
+            <button
+              onClick={handleImportFoursquare}
+              disabled={!onImportFoursquare || isImportingFoursquare}
+              className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Sparkles className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              <span className="text-[10px] font-medium text-gray-700 dark:text-gray-300 leading-tight">
+                {isImportingFoursquare ? "Loading" : "FSQ ID"}
               </span>
             </button>
             <button

@@ -212,6 +212,60 @@ export function MapMain() {
     [importGeoJSON]
   );
 
+  const handleFoursquareImport = useCallback(
+    async (query: string) => {
+      const res = await fetch(
+        `/api/foursquare/search?q=${encodeURIComponent(query)}&limit=20`,
+        { cache: "no-store" }
+      );
+
+      if (!res.ok) {
+        throw new Error("Foursquare import failed");
+      }
+
+      const data = (await res.json()) as {
+        places?: Array<{ name: string; location?: string; lat: number | null; lng: number | null }>;
+      };
+
+      const places = data.places ?? [];
+      const existing = new Set(
+        pois.map((p) => `${p.title.toLowerCase()}::${p.lat.toFixed(4)}::${p.lng.toFixed(4)}`)
+      );
+
+      const inferCategory = (q: string): POICategory => {
+        const lower = q.toLowerCase();
+        if (lower.includes("hotel") || lower.includes("villa") || lower.includes("resort")) return "lodging";
+        if (lower.includes("coffee") || lower.includes("cafe") || lower.includes("restaurant") || lower.includes("food")) return "food-drink";
+        if (lower.includes("pantai") || lower.includes("gunung") || lower.includes("air terjun") || lower.includes("nature")) return "nature";
+        if (lower.includes("wisata") || lower.includes("tour")) return "tourism";
+        return "tourism";
+      };
+
+      const category = inferCategory(query);
+      let added = 0;
+
+      for (const row of places) {
+        if (typeof row.lat !== "number" || typeof row.lng !== "number") continue;
+
+        const key = `${row.name.toLowerCase()}::${row.lat.toFixed(4)}::${row.lng.toFixed(4)}`;
+        if (existing.has(key)) continue;
+
+        addPOI(
+          row.name,
+          row.lat,
+          row.lng,
+          category,
+          row.location ? `Imported from Foursquare: ${row.location}` : "Imported from Foursquare"
+        );
+        existing.add(key);
+        added += 1;
+      }
+
+      toast.success(`Imported ${added} place${added !== 1 ? "s" : ""} from Foursquare`);
+    },
+    [addPOI, pois]
+  );
+
   // Category click handler for MapTopBar
   const handleCategoryClick = useCallback(
     (categoryId: string) => {
@@ -315,6 +369,7 @@ export function MapMain() {
         onClearAll={clearAllPOIs}
         onExport={handlePOIExport}
         onImport={handlePOIImport}
+        onImportFoursquare={handleFoursquareImport}
         onFlyTo={flyToPOI}
         onRequestLocation={handleRequestPOILocation}
         onClearCoordinates={handleClearPOICoordinates}
