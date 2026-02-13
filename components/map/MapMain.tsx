@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { LeafletMap } from "./LeafletMap";
 import { LeafletTileLayer } from "./LeafletTileLayer";
@@ -19,6 +19,7 @@ import { useMapMarkers } from "@/hooks/useMapMarkers";
 import { usePOIManager } from "@/hooks/usePOIManager";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useLeafletMap } from "@/hooks/useLeafletMap";
+import type { Polyline } from "leaflet";
 import type { POICategory } from "@/types/poi";
 
 // Memoized style object to prevent unnecessary re-renders
@@ -56,6 +57,7 @@ export function MapMain() {
     lat: number;
     lng: number;
   } | null>(null);
+  const routeLineRef = useRef<Polyline | null>(null);
 
   // Use custom hook for theme-aware tile provider management
   const { tileProvider, currentProviderId, setProviderId } =
@@ -95,6 +97,14 @@ export function MapMain() {
     localStorage.setItem(LOCATION_PROMPT_KEY, "1");
     locateUser();
   }, [isAvailable, locateUser]);
+
+  useEffect(() => {
+    return () => {
+      if (map && routeLineRef.current && map.hasLayer(routeLineRef.current)) {
+        map.removeLayer(routeLineRef.current);
+      }
+    };
+  }, [map]);
 
   // Memoized callbacks to prevent unnecessary re-renders
   const handleCountrySelect = useCallback(async (countryId: string) => {
@@ -321,24 +331,40 @@ export function MapMain() {
     return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   };
 
+  const clearRouteLine = useCallback(() => {
+    if (!map || !routeLineRef.current) return;
+    if (map.hasLayer(routeLineRef.current)) {
+      map.removeLayer(routeLineRef.current);
+    }
+    routeLineRef.current = null;
+  }, [map]);
+
   const getRouteSummary = useCallback(async (fromLat: number, fromLng: number, toLat: number, toLng: number) => {
     try {
       const res = await fetch(
-        `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=false`,
+        `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`,
         { cache: "no-store" }
       );
       if (!res.ok) return null;
 
       const data = (await res.json()) as {
-        routes?: Array<{ distance?: number; duration?: number }>;
+        routes?: Array<{
+          distance?: number;
+          duration?: number;
+          geometry?: { coordinates?: [number, number][] };
+        }>;
       };
 
       const route = data.routes?.[0];
       if (!route?.distance || !route?.duration) return null;
 
+      const points =
+        route.geometry?.coordinates?.map(([lng, lat]) => [lat, lng] as [number, number]) ?? [];
+
       return {
         km: route.distance / 1000,
         minutes: Math.round(route.duration / 60),
+        points,
       };
     } catch {
       return null;
@@ -348,6 +374,7 @@ export function MapMain() {
   const handlePlaceSelect = useCallback(
     async (place: { name: string; lat: number; lng: number; location?: string }) => {
       if (!map) return;
+      clearRouteLine();
       map.flyTo([place.lat, place.lng], 16, { duration: 1.2 });
 
       const position = await new Promise<GeolocationPosition | null>((resolve) => {
@@ -363,6 +390,16 @@ export function MapMain() {
         const fromLng = position.coords.longitude;
         const route = await getRouteSummary(fromLat, fromLng, place.lat, place.lng);
         if (route) {
+          if (route.points.length > 1) {
+            const L = await import("leaflet");
+            const line = L.polyline(route.points, {
+              color: "#10b981",
+              weight: 5,
+              opacity: 0.9,
+            }).addTo(map);
+            routeLineRef.current = line;
+            map.fitBounds(line.getBounds(), { padding: [40, 40] });
+          }
           toast.success(`${place.name} • ${route.km.toFixed(1)} km • ${route.minutes} menit`);
           return;
         }
@@ -374,7 +411,7 @@ export function MapMain() {
 
       toast.success(place.location ? `${place.name} • ${place.location}` : place.name);
     },
-    [map, getRouteSummary]
+    [map, getRouteSummary, clearRouteLine]
   );
 
   const handleNearbySearch = useCallback(
@@ -426,14 +463,25 @@ export function MapMain() {
       const km = distanceInKm(lat, lng, nearest.lat, nearest.lng);
       const route = await getRouteSummary(lat, lng, nearest.lat, nearest.lng);
 
+      clearRouteLine();
       map.flyTo([nearest.lat, nearest.lng], 15, { duration: 1.4 });
       if (route) {
+        if (route.points.length > 1) {
+          const L = await import("leaflet");
+          const line = L.polyline(route.points, {
+            color: "#10b981",
+            weight: 5,
+            opacity: 0.9,
+          }).addTo(map);
+          routeLineRef.current = line;
+          map.fitBounds(line.getBounds(), { padding: [40, 40] });
+        }
         toast.success(`${nearest.name} • ${route.km.toFixed(1)} km • ${route.minutes} menit`);
       } else {
         toast.success(`${nearest.name} • ${km.toFixed(1)} km dari lokasimu`);
       }
     },
-    [map, getRouteSummary]
+    [map, getRouteSummary, clearRouteLine]
   );
 
   // Memoize tile layer props to prevent unnecessary updates
