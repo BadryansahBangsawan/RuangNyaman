@@ -102,16 +102,21 @@ export function MapSearchBar({
           );
         });
 
+        // Hanya tampilkan suggestion tempat jika lokasi user tersedia,
+        // agar hasil benar-benar nearby dan tidak meleset jauh.
+        if (!position) {
+          const countryRes = await fetch(`/api/countries/search?q=${encodeURIComponent(query)}`);
+          const countryData = (await countryRes.json()) as Country[];
+          setPlaces([]);
+          setCountries(countryData ?? []);
+          return;
+        }
+
         const fsqUrl = new URL("/api/foursquare/search", window.location.origin);
         fsqUrl.searchParams.set("q", query);
         fsqUrl.searchParams.set("limit", "8");
-        if (position) {
-          fsqUrl.searchParams.set("lat", String(position.coords.latitude));
-          fsqUrl.searchParams.set("lng", String(position.coords.longitude));
-        } else {
-          // Without user location, nearby ranking can be misleading.
-          fsqUrl.searchParams.set("strict", "0");
-        }
+        fsqUrl.searchParams.set("lat", String(position.coords.latitude));
+        fsqUrl.searchParams.set("lng", String(position.coords.longitude));
 
         const [placeRes, countryRes] = await Promise.all([
           fetch(fsqUrl.toString()),
@@ -499,6 +504,9 @@ export function MapSearchBar({
                 </div>
                 <ChevronRight className="h-5 w-5 text-emerald-400 dark:text-emerald-500" />
               </button>
+              <div className="px-4 pb-2 text-[11px] text-amber-600 dark:text-amber-400">
+                Untuk hasil akurat, aktifkan izin lokasi presisi di browser.
+              </div>
             </div>
           )}
 
