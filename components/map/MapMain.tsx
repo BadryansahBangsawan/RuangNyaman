@@ -461,8 +461,8 @@ export function MapMain() {
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 30000,
+          timeout: 15000,
+          maximumAge: 0,
         });
       }).catch(() => null);
 
@@ -509,17 +509,35 @@ export function MapMain() {
         const db = typeof b.distance_m === "number" ? b.distance_m : distanceInKm(lat, lng, b.lat, b.lng) * 1000;
         return da - db;
       });
-      const nearest = candidates[0];
-      const km = distanceInKm(lat, lng, nearest.lat, nearest.lng);
-      const route = await getRouteSummary(lat, lng, nearest.lat, nearest.lng);
-      const routeLooksWrong = !!route && route.km > km * 3.5;
+
+      // Validate nearest using actual route distance among top candidates
+      const topCandidates = candidates.slice(0, 5);
+      let chosen = topCandidates[0];
+      let chosenRoute: Awaited<ReturnType<typeof getRouteSummary>> = null;
+      let chosenRouteKm = Number.POSITIVE_INFINITY;
+
+      for (const candidate of topCandidates) {
+        const route = await getRouteSummary(lat, lng, candidate.lat, candidate.lng);
+        if (!route) continue;
+
+        const directKm = distanceInKm(lat, lng, candidate.lat, candidate.lng);
+        if (route.km > directKm * 3.5) continue;
+
+        if (route.km < chosenRouteKm) {
+          chosen = candidate;
+          chosenRoute = route;
+          chosenRouteKm = route.km;
+        }
+      }
+
+      const km = distanceInKm(lat, lng, chosen.lat, chosen.lng);
 
       clearRouteDecorations();
-      map.flyTo([nearest.lat, nearest.lng], 15, { duration: 1.4 });
-      if (route && !routeLooksWrong) {
-        if (route.points.length > 1) {
+      map.flyTo([chosen.lat, chosen.lng], 15, { duration: 1.4 });
+      if (chosenRoute) {
+        if (chosenRoute.points.length > 1) {
           const L = await import("leaflet");
-          const line = L.polyline(route.points, {
+          const line = L.polyline(chosenRoute.points, {
             color: "#10b981",
             weight: 5,
             opacity: 0.9,
@@ -537,7 +555,7 @@ export function MapMain() {
             .addTo(map)
             .bindPopup("Lokasi kamu");
 
-          const endMarker = L.marker([nearest.lat, nearest.lng], {
+          const endMarker = L.marker([chosen.lat, chosen.lng], {
             icon: L.divIcon({
               className: "route-end-marker",
               html: '<div style="width:16px;height:16px;border-radius:9999px;background:#ef4444;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
@@ -546,16 +564,16 @@ export function MapMain() {
             }),
           })
             .addTo(map)
-            .bindPopup(nearest.name);
+            .bindPopup(chosen.name);
 
           routeStartMarkerRef.current = startMarker;
           routeEndMarkerRef.current = endMarker;
 
           map.fitBounds(line.getBounds(), { padding: [40, 40] });
         }
-        toast.success(`${nearest.name} • ${route.km.toFixed(1)} km • ${route.minutes} menit`);
+        toast.success(`${chosen.name} • ${chosenRoute.km.toFixed(1)} km • ${chosenRoute.minutes} menit`);
       } else {
-        toast.success(`${nearest.name} • ~${km.toFixed(1)} km (estimasi garis lurus)`);
+        toast.success(`${chosen.name} • ~${km.toFixed(1)} km (estimasi garis lurus)`);
       }
     },
     [map, getRouteSummary, clearRouteDecorations]
