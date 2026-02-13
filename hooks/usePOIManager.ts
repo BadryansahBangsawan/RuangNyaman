@@ -6,7 +6,7 @@ import type { POI, POIGeoJSON, POICategory } from '@/types/poi';
 import { getCategoryColor } from '@/constants/poi-categories';
 import type { Marker } from 'leaflet';
 
-const STORAGE_KEY = 'nextjs-leaflet-pois';
+const STORAGE_KEY = 'ruang-nyaman-pois';
 
 /**
  * Hook for managing POIs (Points of Interest)

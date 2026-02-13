@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Hero } from "@/components/landing/Hero";
 import { NavigationButtons } from "@/components/landing/NavigationButtons";
-import { TechStack } from "@/components/landing/TechStack";
+// import { TechStack } from "@/components/landing/TechStack";
 
 /**
  * Landing page component (Server Component)
@@ -28,28 +28,9 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
       </div>
 
-      {/* Unsplash attribution */}
+      {/* Unsplash attribution (removed name text as requested) */}
       <div className="absolute bottom-4 left-4 z-10 text-xs text-white/90">
-        <div className="flex items-center gap-1 px-3 py-2 bg-black/50 backdrop-blur-sm rounded-lg">
-          <span>Photo by</span>
-          <a
-            href="https://unsplash.com/@vimal_s?utm_source=nextjs-leaflet&utm_medium=referral"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-white transition-colors"
-          >
-            Vimal S
-          </a>
-          <span>on</span>
-          <a
-            href="https://unsplash.com?utm_source=nextjs-leaflet&utm_medium=referral"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-white transition-colors"
-          >
-            Unsplash
-          </a>
-        </div>
+        <div className="flex items-center gap-1 px-3 py-2 bg-black/50 backdrop-blur-sm rounded-lg"></div>
       </div>
 
       {/* Main content */}
@@ -64,10 +45,10 @@ export default function Home() {
           <NavigationButtons />
         </section>
 
-        {/* Tech stack */}
-        <section className="w-full py-8">
+        {/* Tech stack - disabled */}
+        {/* <section className="w-full py-8">
           <TechStack />
-        </section>
+        </section> */}
       </main>
     </div>
   );

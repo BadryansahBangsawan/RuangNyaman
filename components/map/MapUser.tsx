@@ -46,13 +46,13 @@ export function MapUser() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <a
-            href="https://github.com/wellywahyudi/nextjs-leaflet-starter"
+            href="https://badryansahbangsawan.my.id/"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center cursor-pointer"
           >
             <User className="mr-2 h-4 w-4" />
-            <span>GitHub</span>
+            <span>Author</span>
           </a>
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -71,10 +71,6 @@ export function MapUser() {
               <span>Dark Mode</span>
             </>
           )}
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Settings</span>
         </DropdownMenuItem>
         <DropdownMenuItem>
           <HelpCircle className="mr-2 h-4 w-4" />

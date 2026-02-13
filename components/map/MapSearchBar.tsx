@@ -30,7 +30,7 @@ interface MapSearchBarProps {
 }
 
 /**
- * MapSearchBar - Google Maps-style expandable search bar with keyboard navigation
+ * MapSearchBar - Search bar yang dapat diperluas dengan navigasi keyboard
  *
  * Features:
  * - Expandable search with smooth animations

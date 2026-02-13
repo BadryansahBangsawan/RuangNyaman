@@ -9,18 +9,18 @@ import { MapMain, MapErrorBoundary, MapLoadingSpinner } from "@/components/map";
  * - Child components (MapMain, MapProvider, etc.) are Client Components
  *
  * Features:
- * - Modern Google Maps-style interface
- * - Full-screen map layout with Leaflet integration
- * - Search functionality
- * - Category filters
- * - Layer controls and zoom controls
- * - Navigation controls
- * - Error boundary for graceful error handling
- * - Loading spinner during initialization
- * - Responsive design
+ * - Interface peta modern
+ * - Layout peta full-screen dengan integrasi Leaflet
+ * - Fungsi pencarian
+ * - Filter kategori
+ * - Kontrol layer dan zoom
+ * - Kontrol navigasi
+ * - Error boundary untuk penanganan error yang elegan
+ * - Loading spinner saat inisialisasi
+ * - Desain responsif
  *
- * This page demonstrates the MapMain component which combines Leaflet
- * functionality with a modern, polished UI similar to Google Maps.
+ * Halaman ini menampilkan komponen MapMain yang menggabungkan fungsionalitas
+ * Leaflet dengan UI modern dan elegan untuk RuangNyaman.
  */
 export default function MapPage() {
   return (

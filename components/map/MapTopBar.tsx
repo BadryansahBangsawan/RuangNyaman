@@ -6,10 +6,10 @@ import { MapThemeSwitcher } from "./MapThemeSwitcher";
 import { MapUser } from "./MapUser";
 
 const categories = [
-  { icon: Utensils, label: "Restaurants", id: "restaurants" },
-  { icon: Hotel, label: "Hotels", id: "hotels" },
-  { icon: Compass, label: "Attractions", id: "attractions" },
-  { icon: Bus, label: "Transit", id: "transit" },
+  { icon: Utensils, label: "Restoran & Cafe", id: "restaurants" },
+  { icon: Hotel, label: "Hotel & Penginapan", id: "hotels" },
+  { icon: Compass, label: "Tempat Wisata", id: "attractions" },
+  { icon: Bus, label: "Transportasi", id: "transit" },
 ] as const;
 
 interface MapTopBarProps {

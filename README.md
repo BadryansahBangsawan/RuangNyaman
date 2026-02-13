@@ -1,6 +1,6 @@
-# Next.js Leaflet Starter
+# RuangNyaman
 
-A production-ready Next.js 16 starter template with vanilla Leaflet integration. Build modern, interactive map applications with a Google Maps-inspired UI.
+Website untuk menemukan lokasi tempat wisata, coffee shop, hotel, dan berbagai tempat menarik lainnya. Dibangun dengan Next.js 16 dan Leaflet untuk pengalaman peta yang modern dan interaktif.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.0.7-black?logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2.1-61DAFB?logo=react)](https://react.dev/)
@@ -12,41 +12,39 @@ A production-ready Next.js 16 starter template with vanilla Leaflet integration.
 
 ![Demo Screenshot](screenshot.png)
 
-📖 **Read the full story:** [I Built a Google Maps Clone Using Next.js 16 + Leaflet](https://dev.to/wellywahyudi/i-built-a-google-maps-clone-using-nextjs-16-leaflet-now-its-an-open-source-starter-kit-9n5)
+## ✨ Fitur
 
-## ✨ Features
+### Fitur Peta Utama
 
-### Core Map Features
+- **Interface Peta Modern** — UI yang inspiratif dengan animasi yang halus
+- **Multiple Tile Providers** — OpenStreetMap, Satellite (Esri), dan Dark mode (CARTO)
+- **Theme-Aware Basemaps** — Otomatis mengganti style peta berdasarkan tema terang/gelap
+- **Dukungan GeoJSON** — Render dan style fitur geografis dengan animasi fly-to
+- **Pencarian Lokasi** — Pencarian dengan keyboard navigation (↑↓ Enter Esc)
+- **Kontrol Peta** — Zoom, fullscreen, geolocation, dan reset view
+- **Desain Responsif** — Mobile-first dengan layout adaptif
+- **Server Components** — Next.js 16 App Router dengan optimasi client boundaries
 
-- **Modern Map Interface** — Google Maps-inspired UI with smooth animations
-- **Multiple Tile Providers** — OpenStreetMap, Satellite (Esri), and Dark mode (CARTO)
-- **Theme-Aware Basemaps** — Auto-switches map style based on light/dark theme
-- **GeoJSON Support** — Render and style geographic features with fly-to animations
-- **Country Search** — Debounced search with keyboard navigation (↑↓ Enter Esc)
-- **Map Controls** — Zoom, fullscreen, geolocation, and reset view
-- **Responsive Design** — Mobile-first approach with adaptive layouts
-- **Server Components** — Next.js 16 App Router with optimized client boundaries
+### 🆕 Manajemen POI (Point of Interest)
 
-### 🆕 POI (Point of Interest) Management
+- **Operasi CRUD Lengkap** — Buat, baca, update, dan hapus tempat kustom
+- **14 Tipe Kategori** — Makanan & Minuman, Belanja, Transportasi, Penginapan, Kesehatan, Hiburan, Alam, Layanan, Pendidikan, Agama, Bisnis, Wisata, Darurat, Utilitas
+- **Interactive Location Picker** — Klik untuk memilih dengan live cursor tracking
+- **Penyimpanan LocalStorage** — Tempat Anda tersimpan otomatis
+- **Import/Export GeoJSON** — Bagikan dan backup tempat Anda
+- **Filter Kategori** — Filter tempat berdasarkan kategori dengan marker berwarna
+- **Animasi Fly-to** — Navigasi halus ke tempat yang tersimpan
+- **Optimasi Mobile** — Drawer UI di mobile, side panel di desktop
+- **Notifikasi Toast** — Feedback yang indah dan berwarna untuk semua aksi
 
-- **Full CRUD Operations** — Create, read, update, and delete custom places
-- **14 Category Types** — Food & Drink, Shopping, Transport, Lodging, Health, Entertainment, Nature, Services, Education, Religion, Business, Tourism, Emergency, Utilities
-- **Interactive Location Picker** — Click-to-select with live cursor tracking and crosshair cursor
-- **LocalStorage Persistence** — Your places are saved automatically
-- **GeoJSON Import/Export** — Share and backup your places
-- **Category Filtering** — Filter places by category with color-coded markers
-- **Fly-to Animation** — Smooth navigation to any saved place
-- **Mobile-Optimized** — Drawer UI on mobile, side panel on desktop
-- **Toast Notifications** — Beautiful, colorful feedback for all actions
+### 🎯 Fitur Lanjutan
 
-### 🎯 Advanced Features
-
-- **Context Menu** — Right-click for quick actions (copy coordinates, add marker, measure, save place)
-- **Measurement Tools** — Distance and area measurement with interactive drawing
-- **User Markers** — Add custom markers anywhere on the map
-- **Real-time Coordinate Display** — Live lat/lng tracking when selecting locations
-- **Dark Mode Support** — Seamless theme switching with persistent preferences
-- **Error Boundaries** — Graceful error handling with fallback UI
+- **Context Menu** — Klik kanan untuk aksi cepat (copy koordinat, tambah marker, ukur, simpan tempat)
+- **Alat Pengukuran** — Pengukuran jarak dan area dengan drawing interaktif
+- **User Markers** — Tambah marker kustom di mana saja di peta
+- **Tampilan Koordinat Real-time** — Tracking lat/lng langsung saat memilih lokasi
+- **Dukungan Dark Mode** — Pergantian tema yang mulus dengan preferensi persisten
+- **Error Boundaries** — Penanganan error yang elegan dengan fallback UI
 
 ## 🛠 Tech Stack
 
@@ -61,12 +59,12 @@ A production-ready Next.js 16 starter template with vanilla Leaflet integration.
 | Drawers       | Vaul (mobile-optimized)                 |
 | Language      | TypeScript 5                            |
 
-## 🚀 Quick Start
+## 🚀 Memulai
 
 ```bash
 # Clone the repository
-git clone https://github.com/wellywahyudi/nextjs-leaflet-starter.git
-cd nextjs-leaflet-starter
+git clone <repository-url>
+cd ruang-nyaman
 
 # Install dependencies
 npm install
@@ -75,7 +73,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the landing page, then navigate to `/map` for the interactive map.
+Buka [http://localhost:3000](http://localhost:3000) untuk melihat halaman utama, lalu navigasi ke `/map` untuk peta interaktif.
 
 ## 📁 Project Structure
 

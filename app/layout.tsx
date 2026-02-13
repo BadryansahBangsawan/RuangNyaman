@@ -15,9 +15,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Next.js Leaflet Starter",
+  title: "RuangNyaman",
   description:
-    "Enterprise-grade Next.js 16 starter template with vanilla Leaflet integration",
+    "Temukan lokasi tempat wisata, coffee shop, hotel, dan berbagai tempat menarik lainnya di RuangNyaman",
+  icons: {
+    icon: [
+      { url: "/Logo.png", type: "image/png" },
+    ],
+    apple: [
+      { url: "/Logo.png", type: "image/png" },
+    ],
+    shortcut: "/Logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -27,6 +36,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/Logo.png" />
+        <link rel="apple-touch-icon" href="/Logo.png" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
