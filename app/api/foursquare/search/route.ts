@@ -6,6 +6,7 @@ type FoursquareResult = {
   name?: string;
   latitude?: number;
   longitude?: number;
+  distance?: number;
   location?: {
     formatted_address?: string;
     locality?: string;
@@ -35,13 +36,16 @@ export async function GET(request: NextRequest) {
   const lng = Number(request.nextUrl.searchParams.get("lng") || "");
 
   const hasCoords = Number.isFinite(lat) && Number.isFinite(lng);
+  const strict = request.nextUrl.searchParams.get("strict") !== "0";
 
   const url = new URL("https://places-api.foursquare.com/places/search");
   url.searchParams.set("query", query);
   url.searchParams.set("limit", String(limit));
   if (hasCoords) {
     url.searchParams.set("ll", `${lat},${lng}`);
-    url.searchParams.set("radius", "50000");
+    // tighter radius so results are truly nearby
+    url.searchParams.set("radius", strict ? "15000" : "50000");
+    url.searchParams.set("sort", "DISTANCE");
   } else {
     url.searchParams.set("near", "Indonesia");
   }
@@ -82,7 +86,10 @@ export async function GET(request: NextRequest) {
         [r.location?.locality, r.location?.region, r.location?.country].filter(Boolean).join(", "),
       lat: r.latitude ?? r.geocodes?.main?.latitude ?? null,
       lng: r.longitude ?? r.geocodes?.main?.longitude ?? null,
-    }));
+      distance_m: typeof r.distance === "number" ? r.distance : null,
+    }))
+    .filter((p) => !hasCoords || (typeof p.lat === "number" && typeof p.lng === "number"))
+    .sort((a, b) => (a.distance_m ?? Number.POSITIVE_INFINITY) - (b.distance_m ?? Number.POSITIVE_INFINITY));
 
   return NextResponse.json({
     country: "ID",

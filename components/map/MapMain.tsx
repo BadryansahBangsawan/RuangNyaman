@@ -402,7 +402,9 @@ export function MapMain() {
         const fromLat = position.coords.latitude;
         const fromLng = position.coords.longitude;
         const route = await getRouteSummary(fromLat, fromLng, place.lat, place.lng);
-        if (route) {
+        const directKm = distanceInKm(fromLat, fromLng, place.lat, place.lng);
+        const routeLooksWrong = !!route && route.km > directKm * 3.5;
+        if (route && !routeLooksWrong) {
           if (route.points.length > 1) {
             const L = await import("leaflet");
             const line = L.polyline(route.points, {
@@ -443,8 +445,7 @@ export function MapMain() {
           return;
         }
 
-        const km = distanceInKm(fromLat, fromLng, place.lat, place.lng);
-        toast.success(`${place.name} • ${km.toFixed(1)} km`);
+        toast.success(`${place.name} • ~${directKm.toFixed(1)} km (estimasi garis lurus)`);
         return;
       }
 
@@ -484,11 +485,17 @@ export function MapMain() {
       }
 
       const data = (await res.json()) as {
-        places?: Array<{ name: string; location?: string; lat: number | null; lng: number | null }>;
+        places?: Array<{
+          name: string;
+          location?: string;
+          lat: number | null;
+          lng: number | null;
+          distance_m?: number | null;
+        }>;
       };
 
       const candidates = (data.places ?? []).filter(
-        (p): p is { name: string; location?: string; lat: number; lng: number } =>
+        (p): p is { name: string; location?: string; lat: number; lng: number; distance_m?: number | null } =>
           typeof p.lat === "number" && typeof p.lng === "number"
       );
 
@@ -497,14 +504,19 @@ export function MapMain() {
         return;
       }
 
-      candidates.sort((a, b) => distanceInKm(lat, lng, a.lat, a.lng) - distanceInKm(lat, lng, b.lat, b.lng));
+      candidates.sort((a, b) => {
+        const da = typeof a.distance_m === "number" ? a.distance_m : distanceInKm(lat, lng, a.lat, a.lng) * 1000;
+        const db = typeof b.distance_m === "number" ? b.distance_m : distanceInKm(lat, lng, b.lat, b.lng) * 1000;
+        return da - db;
+      });
       const nearest = candidates[0];
       const km = distanceInKm(lat, lng, nearest.lat, nearest.lng);
       const route = await getRouteSummary(lat, lng, nearest.lat, nearest.lng);
+      const routeLooksWrong = !!route && route.km > km * 3.5;
 
       clearRouteDecorations();
       map.flyTo([nearest.lat, nearest.lng], 15, { duration: 1.4 });
-      if (route) {
+      if (route && !routeLooksWrong) {
         if (route.points.length > 1) {
           const L = await import("leaflet");
           const line = L.polyline(route.points, {
@@ -543,7 +555,7 @@ export function MapMain() {
         }
         toast.success(`${nearest.name} • ${route.km.toFixed(1)} km • ${route.minutes} menit`);
       } else {
-        toast.success(`${nearest.name} • ${km.toFixed(1)} km dari lokasimu`);
+        toast.success(`${nearest.name} • ~${km.toFixed(1)} km (estimasi garis lurus)`);
       }
     },
     [map, getRouteSummary, clearRouteDecorations]

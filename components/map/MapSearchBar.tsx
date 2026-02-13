@@ -25,6 +25,7 @@ interface PlaceSuggestion {
   location?: string;
   lat: number | null;
   lng: number | null;
+  distance_m?: number | null;
 }
 
 interface MapSearchBarProps {
@@ -97,7 +98,7 @@ export function MapSearchBar({
           navigator.geolocation.getCurrentPosition(
             (pos) => resolve(pos),
             () => resolve(null),
-            { enableHighAccuracy: true, timeout: 5000, maximumAge: 30000 }
+            { enableHighAccuracy: true, timeout: 7000, maximumAge: 15000 }
           );
         });
 
@@ -107,6 +108,9 @@ export function MapSearchBar({
         if (position) {
           fsqUrl.searchParams.set("lat", String(position.coords.latitude));
           fsqUrl.searchParams.set("lng", String(position.coords.longitude));
+        } else {
+          // Without user location, nearby ranking can be misleading.
+          fsqUrl.searchParams.set("strict", "0");
         }
 
         const [placeRes, countryRes] = await Promise.all([
@@ -415,6 +419,11 @@ export function MapSearchBar({
                       <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{place.name}</div>
                       {place.location && (
                         <div className="text-sm text-gray-500 dark:text-gray-400 truncate">{place.location}</div>
+                      )}
+                      {typeof place.distance_m === "number" && (
+                        <div className="text-xs text-emerald-600 dark:text-emerald-400">
+                          {(place.distance_m / 1000).toFixed(1)} km
+                        </div>
                       )}
                     </div>
                     {active && <ChevronRight className="h-5 w-5 text-emerald-500 flex-shrink-0" aria-hidden="true" />}
