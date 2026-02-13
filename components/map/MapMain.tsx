@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import { LeafletMap } from "./LeafletMap";
 import { LeafletTileLayer } from "./LeafletTileLayer";
@@ -17,6 +17,7 @@ import { useMapTileProvider } from "@/hooks/useMapTileProvider";
 import { useMapContextMenu } from "@/hooks/useMapContextMenu";
 import { useMapMarkers } from "@/hooks/useMapMarkers";
 import { usePOIManager } from "@/hooks/usePOIManager";
+import { useGeolocation } from "@/hooks/useGeolocation";
 import type { POICategory } from "@/types/poi";
 
 // Memoized style object to prevent unnecessary re-renders
@@ -26,6 +27,8 @@ const GEOJSON_STYLE = {
   color: "#2563eb",
   weight: 2,
 } as const;
+
+const LOCATION_PROMPT_KEY = "ruang-nyaman-location-prompted";
 
 /**
  * MapMain - Main map component with theme-aware tile provider
@@ -78,6 +81,18 @@ export function MapMain() {
     importGeoJSON,
     flyToPOI,
   } = usePOIManager();
+
+  const { locateUser, isAvailable } = useGeolocation();
+
+  useEffect(() => {
+    if (!isAvailable) return;
+
+    const prompted = localStorage.getItem(LOCATION_PROMPT_KEY);
+    if (prompted) return;
+
+    localStorage.setItem(LOCATION_PROMPT_KEY, "1");
+    locateUser();
+  }, [isAvailable, locateUser]);
 
   // Memoized callbacks to prevent unnecessary re-renders
   const handleCountrySelect = useCallback(async (countryId: string) => {
