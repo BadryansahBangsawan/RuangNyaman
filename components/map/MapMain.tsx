@@ -19,7 +19,7 @@ import { useMapMarkers } from "@/hooks/useMapMarkers";
 import { usePOIManager } from "@/hooks/usePOIManager";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useLeafletMap } from "@/hooks/useLeafletMap";
-import type { Polyline } from "leaflet";
+import type { Polyline, Marker } from "leaflet";
 import type { POICategory } from "@/types/poi";
 
 // Memoized style object to prevent unnecessary re-renders
@@ -58,6 +58,8 @@ export function MapMain() {
     lng: number;
   } | null>(null);
   const routeLineRef = useRef<Polyline | null>(null);
+  const routeStartMarkerRef = useRef<Marker | null>(null);
+  const routeEndMarkerRef = useRef<Marker | null>(null);
 
   // Use custom hook for theme-aware tile provider management
   const { tileProvider, currentProviderId, setProviderId } =
@@ -100,9 +102,10 @@ export function MapMain() {
 
   useEffect(() => {
     return () => {
-      if (map && routeLineRef.current && map.hasLayer(routeLineRef.current)) {
-        map.removeLayer(routeLineRef.current);
-      }
+      if (!map) return;
+      if (routeLineRef.current && map.hasLayer(routeLineRef.current)) map.removeLayer(routeLineRef.current);
+      if (routeStartMarkerRef.current && map.hasLayer(routeStartMarkerRef.current)) map.removeLayer(routeStartMarkerRef.current);
+      if (routeEndMarkerRef.current && map.hasLayer(routeEndMarkerRef.current)) map.removeLayer(routeEndMarkerRef.current);
     };
   }, [map]);
 
@@ -331,12 +334,22 @@ export function MapMain() {
     return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   };
 
-  const clearRouteLine = useCallback(() => {
-    if (!map || !routeLineRef.current) return;
-    if (map.hasLayer(routeLineRef.current)) {
+  const clearRouteDecorations = useCallback(() => {
+    if (!map) return;
+
+    if (routeLineRef.current && map.hasLayer(routeLineRef.current)) {
       map.removeLayer(routeLineRef.current);
     }
+    if (routeStartMarkerRef.current && map.hasLayer(routeStartMarkerRef.current)) {
+      map.removeLayer(routeStartMarkerRef.current);
+    }
+    if (routeEndMarkerRef.current && map.hasLayer(routeEndMarkerRef.current)) {
+      map.removeLayer(routeEndMarkerRef.current);
+    }
+
     routeLineRef.current = null;
+    routeStartMarkerRef.current = null;
+    routeEndMarkerRef.current = null;
   }, [map]);
 
   const getRouteSummary = useCallback(async (fromLat: number, fromLng: number, toLat: number, toLng: number) => {
@@ -374,7 +387,7 @@ export function MapMain() {
   const handlePlaceSelect = useCallback(
     async (place: { name: string; lat: number; lng: number; location?: string }) => {
       if (!map) return;
-      clearRouteLine();
+      clearRouteDecorations();
       map.flyTo([place.lat, place.lng], 16, { duration: 1.2 });
 
       const position = await new Promise<GeolocationPosition | null>((resolve) => {
@@ -398,6 +411,32 @@ export function MapMain() {
               opacity: 0.9,
             }).addTo(map);
             routeLineRef.current = line;
+
+            const startMarker = L.marker([fromLat, fromLng], {
+              icon: L.divIcon({
+                className: "route-start-marker",
+                html: '<div style="width:14px;height:14px;border-radius:9999px;background:#2563eb;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
+                iconSize: [14, 14],
+                iconAnchor: [7, 7],
+              }),
+            })
+              .addTo(map)
+              .bindPopup("Lokasi kamu");
+
+            const endMarker = L.marker([place.lat, place.lng], {
+              icon: L.divIcon({
+                className: "route-end-marker",
+                html: '<div style="width:16px;height:16px;border-radius:9999px;background:#ef4444;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
+                iconSize: [16, 16],
+                iconAnchor: [8, 8],
+              }),
+            })
+              .addTo(map)
+              .bindPopup(place.name);
+
+            routeStartMarkerRef.current = startMarker;
+            routeEndMarkerRef.current = endMarker;
+
             map.fitBounds(line.getBounds(), { padding: [40, 40] });
           }
           toast.success(`${place.name} • ${route.km.toFixed(1)} km • ${route.minutes} menit`);
@@ -411,7 +450,7 @@ export function MapMain() {
 
       toast.success(place.location ? `${place.name} • ${place.location}` : place.name);
     },
-    [map, getRouteSummary, clearRouteLine]
+    [map, getRouteSummary, clearRouteDecorations]
   );
 
   const handleNearbySearch = useCallback(
@@ -463,7 +502,7 @@ export function MapMain() {
       const km = distanceInKm(lat, lng, nearest.lat, nearest.lng);
       const route = await getRouteSummary(lat, lng, nearest.lat, nearest.lng);
 
-      clearRouteLine();
+      clearRouteDecorations();
       map.flyTo([nearest.lat, nearest.lng], 15, { duration: 1.4 });
       if (route) {
         if (route.points.length > 1) {
@@ -474,6 +513,32 @@ export function MapMain() {
             opacity: 0.9,
           }).addTo(map);
           routeLineRef.current = line;
+
+          const startMarker = L.marker([lat, lng], {
+            icon: L.divIcon({
+              className: "route-start-marker",
+              html: '<div style="width:14px;height:14px;border-radius:9999px;background:#2563eb;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
+              iconSize: [14, 14],
+              iconAnchor: [7, 7],
+            }),
+          })
+            .addTo(map)
+            .bindPopup("Lokasi kamu");
+
+          const endMarker = L.marker([nearest.lat, nearest.lng], {
+            icon: L.divIcon({
+              className: "route-end-marker",
+              html: '<div style="width:16px;height:16px;border-radius:9999px;background:#ef4444;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
+              iconSize: [16, 16],
+              iconAnchor: [8, 8],
+            }),
+          })
+            .addTo(map)
+            .bindPopup(nearest.name);
+
+          routeStartMarkerRef.current = startMarker;
+          routeEndMarkerRef.current = endMarker;
+
           map.fitBounds(line.getBounds(), { padding: [40, 40] });
         }
         toast.success(`${nearest.name} • ${route.km.toFixed(1)} km • ${route.minutes} menit`);
@@ -481,7 +546,7 @@ export function MapMain() {
         toast.success(`${nearest.name} • ${km.toFixed(1)} km dari lokasimu`);
       }
     },
-    [map, getRouteSummary, clearRouteLine]
+    [map, getRouteSummary, clearRouteDecorations]
   );
 
   // Memoize tile layer props to prevent unnecessary updates
