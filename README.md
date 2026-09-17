@@ -61,10 +61,12 @@ Website untuk menemukan lokasi tempat wisata, coffee shop, hotel, dan berbagai t
 
 ## 🚀 Memulai
 
+Butuh **Node.js LTS** (18+) sebelum `npm install`.
+
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd ruang-nyaman
+git clone https://github.com/BadryansahBangsawan/RuangNyaman.git
+cd RuangNyaman
 
 # Install dependencies
 npm install
