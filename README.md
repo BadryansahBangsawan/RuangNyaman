@@ -190,6 +190,15 @@ This starter is production-ready with:
 - ✅ Accessibility features (ARIA labels, keyboard navigation)
 - ✅ Dark mode support
 
+## 🔧 Troubleshooting
+
+| Masalah | Solusi |
+| ------- | ------ |
+| `window is not defined` saat build | Pastikan komponen Leaflet di-wrap `dynamic(() => import(...), { ssr: false })` — Leaflet membutuhkan DOM browser |
+| Tile layer tidak muncul di production | Tambahkan domain tile provider ke `next.config.ts` `images.remotePatterns` jika menggunakan `<Image>` |
+| Peta kosong setelah hydration | Panggil `map.invalidateSize()` di dalam `useEffect` setelah container selesai di-render |
+| POI tidak tersimpan setelah refresh | LocalStorage mungkin diblokir di mode incognito — gunakan fallback `sessionStorage` atau cek `window.localStorage` tersedia |
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
