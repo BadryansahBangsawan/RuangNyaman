@@ -155,7 +155,7 @@ npm run lint     # Run ESLint
 
 ## 🚢 Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/wellywahyudi/nextjs-leaflet-starter)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/BadryansahBangsawan/RuangNyaman)
 
 ### Manual Deployment
 
