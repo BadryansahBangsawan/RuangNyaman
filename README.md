@@ -206,6 +206,12 @@ This starter is production-ready with:
 - **Lazy-load heavy panels** — defer `MapMeasurementPanel` and `MapPOIPanel` with `next/dynamic` (`ssr: false`) so the initial tile paint isn't blocked.
 - **Debounce search input** — add a 300 ms debounce on the location search handler to reduce geocoding requests while the user is still typing.
 
+## ♿ Accessibility
+
+- Map search supports full keyboard navigation (`↑`/`↓` to move, `Enter` to select, `Esc` to dismiss).
+- Prefer the context menu and control buttons over drag-only gestures when using assistive tech; controls expose ARIA labels.
+- Keep sufficient color contrast when adding custom marker icons — avoid relying on color alone for category meaning.
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
