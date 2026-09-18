@@ -199,6 +199,13 @@ This starter is production-ready with:
 | Peta kosong setelah hydration | Panggil `map.invalidateSize()` di dalam `useEffect` setelah container selesai di-render |
 | POI tidak tersimpan setelah refresh | LocalStorage mungkin diblokir di mode incognito — gunakan fallback `sessionStorage` atau cek `window.localStorage` tersedia |
 
+## ⚡ Performance Tips
+
+- **Cluster large POI sets** — use `leaflet.markercluster` when rendering more than ~200 markers; it collapses nearby pins into a count bubble and avoids DOM overload.
+- **Memoize GeoJSON filtering** — wrap expensive `filter`/`map` calls on GeoJSON features with `useMemo` so they don't recalculate on every render cycle.
+- **Lazy-load heavy panels** — defer `MapMeasurementPanel` and `MapPOIPanel` with `next/dynamic` (`ssr: false`) so the initial tile paint isn't blocked.
+- **Debounce search input** — add a 300 ms debounce on the location search handler to reduce geocoding requests while the user is still typing.
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
