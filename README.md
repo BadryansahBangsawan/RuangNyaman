@@ -30,7 +30,7 @@ Website untuk menemukan lokasi tempat wisata, coffee shop, hotel, dan berbagai t
 - **Operasi CRUD Lengkap** — Buat, baca, update, dan hapus tempat kustom
 - **14 Tipe Kategori** — Makanan & Minuman, Belanja, Transportasi, Penginapan, Kesehatan, Hiburan, Alam, Layanan, Pendidikan, Agama, Bisnis, Wisata, Darurat, Utilitas
 - **Interactive Location Picker** — Klik untuk memilih dengan live cursor tracking
-- **Penyimpanan LocalStorage** — Tempat Anda tersimpan otomatis
+- **Penyimpanan LocalStorage** — Tempat Anda tersimpan otomatis di origin yang sama (`localhost` dan deploy production tidak berbagi data)
 - **Import/Export GeoJSON** — Bagikan dan backup tempat Anda
 - **Filter Kategori** — Filter tempat berdasarkan kategori dengan marker berwarna
 - **Animasi Fly-to** — Navigasi halus ke tempat yang tersimpan
