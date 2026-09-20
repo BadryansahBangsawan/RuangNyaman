@@ -219,3 +219,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 📄 License
 
 MIT License — feel free to use this starter for personal or commercial projects.
+
+## Leaflet CSS
+
+Import leaflet/dist/leaflet.css once in the map client entry (or app/map layout). Without that stylesheet, tiles may load while zoom controls and attribution sit unstyled or overlap the map.
